@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0
+- Neuer Service **`ebus_bridge.write`** (circuit · message · value) – generischer
+  Durchreicher zu ebusds `write`, Mehrfeld-Werte mit `;`. Liest nach dem Schreiben
+  frisch zurück und gibt den aktuellen Wert als Response zurück. Grundlage für
+  späteres Kalender-Schreiben (sobald ebusd eine schreibbare Timer-Nachricht bietet).
+
 ## 0.5.0
 - Umbenannt in **„eBUS Bridge"** – Anzeigename **und** Domain `ebus_bridge`
   (Abgrenzung zur HACS-Integration „eBus Direct"; herstellerneutral, Vaillant &

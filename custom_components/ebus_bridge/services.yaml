@@ -1,0 +1,34 @@
+write:
+  name: Write value
+  description: >-
+    Write a raw value to an ebusd message (thin pass-through to ebusd's write
+    command). Separate multiple fields with ";" (e.g. "0;3;06:00;22:00;20.0").
+    Returns the message's value read back afterwards.
+  fields:
+    circuit:
+      name: Circuit
+      description: ebusd circuit, e.g. ctlv3.
+      required: true
+      example: ctlv3
+      selector:
+        text:
+    message:
+      name: Message
+      description: ebusd message name, e.g. Hc1HeatCurve or Z1Timer_Monday.
+      required: true
+      example: Hc1HeatCurve
+      selector:
+        text:
+    value:
+      name: Value
+      description: Value to write; multiple fields separated by ";".
+      required: true
+      example: "0.7"
+      selector:
+        text:
+    entry_id:
+      name: Instance (entry_id)
+      description: Only needed with multiple eBUS Bridge instances.
+      required: false
+      selector:
+        text:

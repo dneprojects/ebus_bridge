@@ -27,6 +27,14 @@ die eigentliche eBUS-Dekodierung; diese Integration ist die HA-Schicht darüber.
 Nach jedem Schreiben (number/select/switch) liest die Integration den Wert frisch
 zurück (`read -f`), damit nicht gepollte Sollwerte nicht „nicht verfügbar" werden.
 
+## Service
+- **`ebus_bridge.write`** (`circuit`, `message`, `value`) – generischer
+  Durchreicher zu ebusds `write`. Mehrfeld-Werte mit `;` trennen
+  (z. B. `0;3;06:00;22:00;20.0`). Liest nach dem Schreiben frisch zurück und gibt
+  den aktuellen Wert als Response zurück. Damit lässt sich **jede** schreibbare
+  ebusd-Nachricht setzen – auch Timer, sobald ebusd eine Schreib-Nachricht dafür
+  anbietet.
+
 ## Optionen
 Integration → **Konfigurieren**:
 - **Poll-Intervall** (Sekunden).
