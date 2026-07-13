@@ -1,0 +1,12 @@
+{
+  "domain": "ebusd_direct",
+  "name": "ebusd Direct",
+  "codeowners": [],
+  "config_flow": true,
+  "documentation": "https://github.com/dneprojects/ebusd_direct",
+  "issue_tracker": "https://github.com/dneprojects/ebusd_direct/issues",
+  "integration_type": "hub",
+  "iot_class": "local_polling",
+  "requirements": [],
+  "version": "0.5.0"
+}

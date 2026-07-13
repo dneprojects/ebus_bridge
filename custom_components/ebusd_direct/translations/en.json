@@ -1,0 +1,32 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ebusd Direct",
+        "description": "Connect to ebusd. Requires the TCP command port (write) and the HTTP-JSON port (read) to be exposed.",
+        "data": {
+          "host": "Host / IP",
+          "port": "TCP port (write)",
+          "http_port": "HTTP-JSON port (read)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach ebusd. Are ports 8888 (TCP) and 8889 (HTTP) exposed?"
+    },
+    "abort": {
+      "already_configured": "This ebusd instance is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ebusd Direct options",
+        "data": {
+          "scan_interval": "Poll interval (seconds)",
+          "exclude": "Exclude message-name substrings (comma-separated, e.g. Timer)"
+        }
+      }
+    }
+  }
+}

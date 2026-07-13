@@ -1,0 +1,32 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ebusd Direct",
+        "description": "Verbindung zu ebusd. TCP-Kommandoport (Schreiben) und HTTP-JSON-Port (Lesen) müssen freigegeben sein.",
+        "data": {
+          "host": "Host / IP",
+          "port": "TCP-Port (Schreiben)",
+          "http_port": "HTTP-JSON-Port (Lesen)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "ebusd nicht erreichbar. Sind Port 8888 (TCP) und 8889 (HTTP) freigegeben?"
+    },
+    "abort": {
+      "already_configured": "Diese ebusd-Instanz ist bereits eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ebusd Direct – Optionen",
+        "data": {
+          "scan_interval": "Poll-Intervall (Sekunden)",
+          "exclude": "Nachrichtennamen ausschließen (Teilstrings, kommagetrennt, z. B. Timer)"
+        }
+      }
+    }
+  }
+}
