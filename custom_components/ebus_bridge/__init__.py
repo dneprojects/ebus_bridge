@@ -1,4 +1,4 @@
-"""ebusd Bridge – native HA-Integration über ebusds HTTP-JSON + TCP (ohne MQTT)."""
+"""eBUS Bridge – native HA-Integration über ebusds HTTP-JSON + TCP (ohne MQTT)."""
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry

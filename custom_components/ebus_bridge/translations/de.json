@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "ebusd Bridge",
+        "title": "eBUS Bridge",
         "description": "Verbindung zu ebusd. TCP-Kommandoport (Schreiben) und HTTP-JSON-Port (Lesen) müssen freigegeben sein.",
         "data": {
           "host": "Host / IP",
@@ -21,7 +21,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "ebusd Bridge – Optionen",
+        "title": "eBUS Bridge – Optionen",
         "data": {
           "scan_interval": "Poll-Intervall (Sekunden)",
           "exclude": "Nachrichtennamen ausschließen (Teilstrings, kommagetrennt, z. B. Timer)"

@@ -1,0 +1,12 @@
+{
+  "domain": "ebus_bridge",
+  "name": "eBUS Bridge",
+  "codeowners": [],
+  "config_flow": true,
+  "documentation": "https://github.com/dneprojects/ebus_bridge",
+  "issue_tracker": "https://github.com/dneprojects/ebus_bridge/issues",
+  "integration_type": "hub",
+  "iot_class": "local_polling",
+  "requirements": [],
+  "version": "0.5.0"
+}

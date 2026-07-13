@@ -1,5 +1,5 @@
 {
-  "name": "ebusd Bridge",
+  "name": "eBUS Bridge",
   "render_readme": true,
   "homeassistant": "2024.1.0"
 }

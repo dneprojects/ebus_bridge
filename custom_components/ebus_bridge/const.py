@@ -1,6 +1,6 @@
-"""Konstanten für die ebusd-Bridge-Integration."""
+"""Konstanten für die eBUS-Bridge-Integration."""
 
-DOMAIN = "ebusd_bridge"
+DOMAIN = "ebus_bridge"
 
 CONF_HOST = "host"
 CONF_PORT = "port"

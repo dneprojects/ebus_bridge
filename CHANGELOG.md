@@ -1,8 +1,9 @@
 # Changelog
 
 ## 0.5.0
-- Umbenannt in **„ebusd Bridge"** – Anzeigename **und** Domain `ebusd_bridge`
-  (Abgrenzung zur HACS-Integration „eBus Direct").
+- Umbenannt in **„eBUS Bridge"** – Anzeigename **und** Domain `ebus_bridge`
+  (Abgrenzung zur HACS-Integration „eBus Direct"; herstellerneutral, Vaillant &
+  weitere eBUS-Geräte).
 - Neue Plattform **switch** für schreibbare reine An/Aus-Felder (aus `select` ausgegliedert).
 - `issue_tracker` in der manifest ergänzt.
 

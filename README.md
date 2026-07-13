@@ -1,4 +1,8 @@
-# ebusd Bridge (Home Assistant)
+# eBUS Bridge (Home Assistant)
+
+**Lokale eBUS-Heizungs-Integration für Home Assistant – ohne Cloud, ohne MQTT.**
+Ideal für **Vaillant** (Wärmepumpe/Heizung/sensoCOMFORT) und weitere eBUS-Hersteller
+(Wolf, Kromschröder/Elster, Brötje, Ferroli …).
 
 Native HA-Integration, die **direkt an ebusd** andockt und daraus automatisch
 Geräte + Entities baut – **ohne MQTT**. ebusd erledigt (mit den CSV-Definitionen)
@@ -41,9 +45,9 @@ http://<HA-IP>:8889/data     # -> JSON im Browser
 ```
 
 ## Installation
-1. Ordner `custom_components/ebusd_bridge/` nach `…/config/custom_components/` kopieren.
+1. Ordner `custom_components/ebus_bridge/` nach `…/config/custom_components/` kopieren.
 2. HA neu starten.
-3. **Einstellungen → Geräte & Dienste → Integration hinzufügen → „ebusd Bridge"**.
+3. **Einstellungen → Geräte & Dienste → Integration hinzufügen → „eBUS Bridge"**.
 4. Host = HA-IP, TCP-Port `8888`, HTTP-Port `8889`.
 
 ## Grenzen
