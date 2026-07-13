@@ -21,8 +21,10 @@ die eigentliche eBUS-Dekodierung; diese Integration ist die HA-Schicht darüber.
 - **select** – schreibbare Enum-Felder (Betriebsarten) mit echten Optionen.
 - **switch** – schreibbare reine An/Aus-Felder.
 - **calendar** – Vaillant-Wochen-Zeitprogramme (`<Prefix>Timer_<Tag><Slot>`), je
-  Wochenprogramm (Z1/Z2/Z3/Hwc/Cc …) ein Kalender, read-only. Fenster =
-  `htm`–`htm_1`, Titel = Soll-Temperatur.
+  Wochenprogramm (Z1/Z2/Z3/Hwc/Cc …) ein Kalender. Fenster = `htm`–`htm_1`,
+  Titel = Soll-Temperatur. **Bearbeitbar** (Anlegen/Ändern/Löschen), **sobald ebusd
+  eine schreibbare Tages-Nachricht `<Prefix>Timer_<Tag>` anbietet** – sonst
+  read-only. Soll-Temp im Termin-Titel; Änderungen gelten fürs ganze Wochen-Fenster.
 
 Nach jedem Schreiben (number/select/switch) liest die Integration den Wert frisch
 zurück (`read -f`), damit nicht gepollte Sollwerte nicht „nicht verfügbar" werden.

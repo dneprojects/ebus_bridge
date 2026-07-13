@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.0
+- **Kalender schreibbar** – Anlegen/Ändern/Löschen von Zeitfenstern, **sobald ebusd
+  eine schreibbare Tages-Nachricht `<Prefix>Timer_<Tag>` anbietet** (sonst bleibt der
+  Kalender wie bisher read-only). Universell/definitionsfrei: nutzt ebusds
+  `slotIndex;slotCount;von;bis[;temp]`-Konvention über den `write`-Durchreicher.
+  Soll-Temperatur wird aus dem Termin-Titel gelesen; Änderungen gelten fürs ganze
+  Wochen-Fenster. `slotCount`-Semantik best-effort (final zu verifizieren auf einem
+  System mit schreibbaren Timern).
+
 ## 0.6.0
 - Neuer Service **`ebus_bridge.write`** (circuit · message · value) – generischer
   Durchreicher zu ebusds `write`, Mehrfeld-Werte mit `;`. Liest nach dem Schreiben
