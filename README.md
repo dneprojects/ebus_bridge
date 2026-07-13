@@ -1,4 +1,4 @@
-# ebusd Direct (Home Assistant)
+# ebusd Bridge (Home Assistant)
 
 Native HA-Integration, die **direkt an ebusd** andockt und daraus automatisch
 Geräte + Entities baut – **ohne MQTT**. ebusd erledigt (mit den CSV-Definitionen)
@@ -43,7 +43,7 @@ http://<HA-IP>:8889/data     # -> JSON im Browser
 ## Installation
 1. Ordner `custom_components/ebusd_direct/` nach `…/config/custom_components/` kopieren.
 2. HA neu starten.
-3. **Einstellungen → Geräte & Dienste → Integration hinzufügen → „ebusd Direct"**.
+3. **Einstellungen → Geräte & Dienste → Integration hinzufügen → „ebusd Bridge"**.
 4. Host = HA-IP, TCP-Port `8888`, HTTP-Port `8889`.
 
 ## Grenzen

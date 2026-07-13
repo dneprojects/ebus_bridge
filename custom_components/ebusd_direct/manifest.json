@@ -1,6 +1,6 @@
 {
   "domain": "ebusd_direct",
-  "name": "ebusd Direct",
+  "name": "ebusd Bridge",
   "codeowners": [],
   "config_flow": true,
   "documentation": "https://github.com/dneprojects/ebusd_direct",

@@ -1,6 +1,8 @@
 # Changelog
 
 ## 0.5.0
+- Anzeigename **„ebusd Bridge"** (Abgrenzung zur HACS-Integration „eBus Direct";
+  Domain `ebusd_direct` bleibt).
 - Neue Plattform **switch** für schreibbare reine An/Aus-Felder (aus `select` ausgegliedert).
 - `issue_tracker` in der manifest ergänzt.
 
