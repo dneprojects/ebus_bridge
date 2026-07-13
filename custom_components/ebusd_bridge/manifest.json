@@ -1,10 +1,10 @@
 {
-  "domain": "ebusd_direct",
+  "domain": "ebusd_bridge",
   "name": "ebusd Bridge",
   "codeowners": [],
   "config_flow": true,
-  "documentation": "https://github.com/dneprojects/ebusd_direct",
-  "issue_tracker": "https://github.com/dneprojects/ebusd_direct/issues",
+  "documentation": "https://github.com/dneprojects/ebusd_bridge",
+  "issue_tracker": "https://github.com/dneprojects/ebusd_bridge/issues",
   "integration_type": "hub",
   "iot_class": "local_polling",
   "requirements": [],

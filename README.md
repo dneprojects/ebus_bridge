@@ -41,7 +41,7 @@ http://<HA-IP>:8889/data     # -> JSON im Browser
 ```
 
 ## Installation
-1. Ordner `custom_components/ebusd_direct/` nach `…/config/custom_components/` kopieren.
+1. Ordner `custom_components/ebusd_bridge/` nach `…/config/custom_components/` kopieren.
 2. HA neu starten.
 3. **Einstellungen → Geräte & Dienste → Integration hinzufügen → „ebusd Bridge"**.
 4. Host = HA-IP, TCP-Port `8888`, HTTP-Port `8889`.
