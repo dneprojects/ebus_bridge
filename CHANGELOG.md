@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.10.0
+- **Eigenes Brand-Icon** (`brand/icon.png` + `icon@2x.png`) – seit HA 2026.3
+  liefern Integrationen ihr Icon selbst mit; lokal hat Vorrang vor der brands-CDN.
+  eBUS-Schriftzug, gedämpfter Terracotta→Tiefrot-Verlauf, transparente Ecken.
+
 ## 0.9.0
 - **Fix:** °C-Sollwerte werden nicht mehr auf 0–100 geklemmt (Spanne −60…150),
   sodass negative Werte (z. B. Außentemperatur-Schwellen) einstellbar bleiben.
