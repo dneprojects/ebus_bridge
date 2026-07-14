@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.2
+- **Passende mdi-Icons** für alle Entitäten (Sensor/number/select/switch/binary),
+  abgeleitet aus Feldname + Einheit (Pumpe, Heizkurve, Vorlauf, Kühlen, Modus …)
+  statt generischer Regler-Symbole.
+
 ## 0.7.1
 - **Gerätenamen ohne „ebusd"** – Klarnamen je Kreis (Produktname wie sensoCOMFORT /
   VR 71, sonst formatierter Kreis).
