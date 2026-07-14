@@ -10,7 +10,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .client import EbusdClient, EbusdError
 from .const import DOMAIN
-from .model import FieldDesc
+from .model import FieldDesc, parse_global, parse_values
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,6 +41,7 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         self._exclude = exclude
         self.entry_id = entry_id
         self.host = host
+        self.global_data: dict[str, Any] = {}
 
     @property
     def bridge_id(self) -> tuple[str, str]:
@@ -54,8 +55,10 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
 
     async def _async_update_data(self) -> dict[tuple[str, str, str], Any]:
         try:
-            values = await self.client.get_values()
+            data = await self.client.get_data()
         except EbusdError as err:
             raise UpdateFailed(f"ebusd: {err}") from err
+        self.global_data = parse_global(data)
+        values = parse_values(data)
         _LOGGER.debug("ebusd: %d Felder mit Wert", len(values))
         return values

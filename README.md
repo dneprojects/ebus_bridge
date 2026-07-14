@@ -29,6 +29,12 @@ die eigentliche eBUS-Dekodierung; diese Integration ist die HA-Schicht darüber.
 Nach jedem Schreiben (number/select/switch) liest die Integration den Wert frisch
 zurück (`read -f`), damit nicht gepollte Sollwerte nicht „nicht verfügbar" werden.
 
+## Bridge-Diagnose
+Am Bridge-Gerät (Kategorie *Diagnose*) aus ebusds globalem Abschnitt: **Signal**
+(Verbindung), **Symbolrate**/Max, **Reconnects**, **Master am Bus**, **QQ**,
+**bekannte Nachrichten**; ebusd-**Version** als `sw_version`. Die Enhanced-Timing-
+Werte (Arbitrierung/Latenz) sind als Diagnose **standardmäßig deaktiviert**.
+
 ## Service
 - **`ebus_bridge.write`** (`circuit`, `message`, `value`) – generischer
   Durchreicher zu ebusds `write`. Mehrfeld-Werte mit `;` trennen

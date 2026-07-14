@@ -61,6 +61,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         name=f"eBUS Bridge ({host})",
         manufacturer="ebusd",
         model="eBUS ↔ Home Assistant",
+        sw_version=coordinator.global_data.get("version"),
         configuration_url=f"http://{host}:{entry.data.get(CONF_HTTP_PORT, DEFAULT_HTTP_PORT)}/data",
     )
 

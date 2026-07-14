@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.0
+- **Bridge-Diagnose** aus ebusds globalem Abschnitt, am Bridge-Gerät (Kategorie
+  Diagnose): Signal (Verbindung), Symbolrate/Max, Reconnects, Master am Bus,
+  ebusd-Adresse (QQ), bekannte Nachrichten. ebusd-Version als `sw_version` der Bridge.
+- **Enhanced-Timing** (Arbitrierung min/max, Symbol-Latenz min/max) als Diagnose,
+  **standardmäßig deaktiviert**.
+
 ## 0.7.3
 - Icon-Heuristik **einheiten-first**: Temperaturen (°C/K) werden immer ein
   Thermometer, Variante je Kontext (Kühlen → snowflake-thermometer, Vorlauf/Wasser

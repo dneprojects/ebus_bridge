@@ -47,6 +47,10 @@ class EbusdClient:
     async def get_values(self) -> dict[tuple[str, str, str], Any]:
         return parse_values(await self._get(""))
 
+    async def get_data(self) -> dict[str, Any]:
+        """Rohes /data (Werte + globaler Abschnitt)."""
+        return await self._get("")
+
     # ---- TCP (Schreiben + Verbindungstest) ---------------------------------
     async def _command(self, cmd: str) -> list[str]:
         try:

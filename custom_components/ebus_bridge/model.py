@@ -219,3 +219,20 @@ def bool_tokens(desc: FieldDesc) -> tuple[str, str]:
         elif low in _BOOL_OFF:
             off_token = name
     return on_token, off_token
+
+
+# Bus-/Adapter-Diagnose aus dem globalen ebusd-Abschnitt.
+_GLOBAL_KEYS = {
+    "version", "signal", "symbolrate", "maxsymbolrate", "reconnects",
+    "masters", "qq", "messages",
+    "minarbitrationmicros", "maxarbitrationmicros",
+    "minsymbollatency", "maxsymbollatency",
+}
+
+
+def parse_global(data: dict[str, Any]) -> dict[str, Any]:
+    """Skalare aus dem `global`-Abschnitt (Signal, Rate, Timing …)."""
+    g = data.get("global")
+    if not isinstance(g, dict):
+        return {}
+    return {k: v for k, v in g.items() if k in _GLOBAL_KEYS}
