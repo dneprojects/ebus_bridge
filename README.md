@@ -36,6 +36,9 @@ definitions); this integration is the HA layer on top.
 - **water_heater** – DHW as a proper water-heater tile (curated Vaillant overlay:
   current `HwcStorageTemp`, target `HwcTempDesired`, mode `HwcOpMode`) — appears only
   when those registers exist.
+- **climate** – one thermostat per active heating zone (curated Vaillant overlay:
+  current `Z<n>RoomTemp`, target = comfort `Z<n>DayTemp`, `Z<n>OpMode` → hvac/preset
+  off/auto/day/night).
 - **calendar** – Vaillant weekly schedules (`<Prefix>Timer_<Day><Slot>`), one calendar
   per program (Z1/Z2/Z3/Hwc/Cc …). Slot = `htm`–`htm_1`, title = target temperature.
   **Editable** (create/update/delete) **once ebusd exposes a writable per-day message
@@ -123,6 +126,9 @@ die eigentliche eBUS-Dekodierung; diese Integration ist die HA-Schicht darüber.
 - **water_heater** – Warmwasser als echte water-heater-Kachel (kuratierter Vaillant-
   Overlay: Ist `HwcStorageTemp`, Soll `HwcTempDesired`, Modus `HwcOpMode`) – erscheint
   nur, wenn diese Register existieren.
+- **climate** – ein Thermostat je aktiver Heizzone (kuratierter Vaillant-Overlay:
+  Ist `Z<n>RoomTemp`, Soll = Komfort `Z<n>DayTemp`, `Z<n>OpMode` → hvac/preset
+  off/auto/day/night).
 - **calendar** – Vaillant-Wochen-Zeitprogramme (`<Prefix>Timer_<Tag><Slot>`), je
   Wochenprogramm (Z1/Z2/Z3/Hwc/Cc …) ein Kalender. Fenster = `htm`–`htm_1`,
   Titel = Soll-Temperatur. **Bearbeitbar** (Anlegen/Ändern/Löschen), **sobald ebusd

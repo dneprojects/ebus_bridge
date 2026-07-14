@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.0
+- New `climate` entity per heating zone (curated Vaillant overlay: `Z<n>RoomTemp` current, `Z<n>DayTemp` target, `Z<n>OpMode` → hvac/preset). Only active zones.
+
 ## 1.1.0
 - New `water_heater` entity for DHW (curated Vaillant overlay: maps `HwcStorageTemp`/`HwcTempDesired`/`HwcOpMode`).
 - New `switch` "Warmwasser-Boost" bound to the DHW one-time charge (`HwcSFMode` = load/auto).

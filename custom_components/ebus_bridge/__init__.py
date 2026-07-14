@@ -23,8 +23,8 @@ from .coordinator import EbusdCoordinator
 from .services import async_setup_services, async_unload_services
 
 PLATFORMS = [
-    "binary_sensor", "calendar", "sensor", "number", "select", "switch",
-    "water_heater",
+    "binary_sensor", "calendar", "climate", "sensor", "number", "select",
+    "switch", "water_heater",
 ]
 
 
