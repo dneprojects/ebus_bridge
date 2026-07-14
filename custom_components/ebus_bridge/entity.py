@@ -27,6 +27,20 @@ def _device_name(circuit: str, model: str | None) -> str:
     return circuit.replace("_", " ").upper()  # "vr_71" -> "VR 71", "wp0" -> "WP0"
 
 
+def build_device_info(coordinator: EbusdCoordinator, circuit: str) -> DeviceInfo:
+    """Gerät je eBUS-Kreis – Klarname (kein „ebusd"), hängt als Kind an der Bridge."""
+    meta = coordinator.device_meta.get(circuit, {})
+    return DeviceInfo(
+        identifiers={(DOMAIN, circuit)},
+        name=_device_name(circuit, meta.get("model")),
+        manufacturer=meta.get("manufacturer", "Vaillant"),
+        model=meta.get("model"),
+        sw_version=meta.get("sw"),
+        hw_version=meta.get("hw"),
+        via_device=coordinator.bridge_id,
+    )
+
+
 class EbusdBaseEntity(CoordinatorEntity[EbusdCoordinator]):
     """Bindet eine Entity an einen Feld-Deskriptor + Coordinator."""
 
@@ -36,15 +50,7 @@ class EbusdBaseEntity(CoordinatorEntity[EbusdCoordinator]):
         super().__init__(coordinator)
         self._desc = desc
         self._attr_name = desc.label
-        meta = coordinator.device_meta.get(desc.circuit, {})
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, desc.circuit)},
-            name=f"ebusd {desc.circuit}",
-            manufacturer=meta.get("manufacturer", "Vaillant"),
-            model=meta.get("model"),
-            sw_version=meta.get("sw"),
-            hw_version=meta.get("hw"),
-        )
+        self._attr_device_info = build_device_info(coordinator, desc.circuit)
 
     @property
     def _value(self) -> Any:

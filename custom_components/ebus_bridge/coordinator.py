@@ -26,6 +26,8 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         device_meta: dict[str, dict[str, str]],
         scan_interval: int,
         exclude: list[str],
+        entry_id: str,
+        host: str,
     ) -> None:
         super().__init__(
             hass,
@@ -37,6 +39,13 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         self.fields = fields
         self.device_meta = device_meta
         self._exclude = exclude
+        self.entry_id = entry_id
+        self.host = host
+
+    @property
+    def bridge_id(self) -> tuple[str, str]:
+        """Identifier des Bridge-Elterngeräts (via_device-Ziel der Kreise)."""
+        return (DOMAIN, self.entry_id)
 
     def included(self, desc: FieldDesc) -> bool:
         """False, wenn der Nachrichtenname ein Ausschluss-Muster enthält."""

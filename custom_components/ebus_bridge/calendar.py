@@ -25,14 +25,13 @@ from homeassistant.components.calendar import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .client import EbusdError
 from .const import DOMAIN
 from .coordinator import EbusdCoordinator
-from .entity import _device_name
+from .entity import build_device_info
 
 _WEEKDAY_NAMES = [
     "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
@@ -130,15 +129,7 @@ class EbusdCalendar(CoordinatorEntity[EbusdCoordinator], CalendarEntity):
                 | CalendarEntityFeature.UPDATE_EVENT
                 | CalendarEntityFeature.DELETE_EVENT
             )
-        meta = coordinator.device_meta.get(circuit, {})
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, circuit)},
-            name=_device_name(circuit, meta.get("model")),
-            manufacturer=meta.get("manufacturer", "Vaillant"),
-            model=meta.get("model"),
-            sw_version=meta.get("sw"),
-            hw_version=meta.get("hw"),
-        )
+        self._attr_device_info = build_device_info(coordinator, circuit)
 
     # ---- Lesen -------------------------------------------------------------
     def _slot_value(self, read_msg: str) -> tuple[time | None, time | None, object]:

@@ -4,6 +4,7 @@ from __future__ import annotations
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .client import EbusdClient, EbusdError
@@ -44,12 +45,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if p.strip()
     ]
 
+    host = entry.data[CONF_HOST]
     coordinator = EbusdCoordinator(
-        hass, client, fields, device_meta, scan_interval, exclude
+        hass, client, fields, device_meta, scan_interval, exclude,
+        entry.entry_id, host,
     )
     await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
+
+    # Bridge-Elterngerät: die eBUS-Kreise hängen per via_device darunter.
+    dr.async_get(hass).async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={(DOMAIN, entry.entry_id)},
+        name=f"eBUS Bridge ({host})",
+        manufacturer="ebusd",
+        model="eBUS ↔ Home Assistant",
+        configuration_url=f"http://{host}:{entry.data.get(CONF_HTTP_PORT, DEFAULT_HTTP_PORT)}/data",
+    )
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     await async_setup_services(hass)
     entry.async_on_unload(entry.add_update_listener(_async_reload))

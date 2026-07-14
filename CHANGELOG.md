@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.1
+- **Gerätenamen ohne „ebusd"** – Klarnamen je Kreis (Produktname wie sensoCOMFORT /
+  VR 71, sonst formatierter Kreis).
+- **Bridge-Elterngerät** „eBUS Bridge (<host>)“ – die eBUS-Kreise (sensoCOMFORT,
+  HWC, VR 71, WP0/WP1 …) hängen per `via_device` als **Kinder** darunter.
+
 ## 0.7.0
 - **Kalender schreibbar** – Anlegen/Ändern/Löschen von Zeitfenstern, **sobald ebusd
   eine schreibbare Tages-Nachricht `<Prefix>Timer_<Tag>` anbietet** (sonst bleibt der
