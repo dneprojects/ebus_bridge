@@ -1,11 +1,11 @@
 # Changelog
 
 ## 1.2.0
-- New `climate` entity per heating zone (curated Vaillant overlay: `Z<n>RoomTemp` current, `Z<n>DayTemp` target, `Z<n>OpMode` → hvac/preset). Only active zones.
+- New `climate` entity per active heating zone (`Z<n>RoomTemp` / `Z<n>DayTemp` / `Z<n>OpMode`).
 
 ## 1.1.0
-- New `water_heater` entity for DHW (curated Vaillant overlay: maps `HwcStorageTemp`/`HwcTempDesired`/`HwcOpMode`).
-- New `switch` "Warmwasser-Boost" bound to the DHW one-time charge (`HwcSFMode` = load/auto).
+- New `water_heater` for DHW (`HwcStorageTemp` / `HwcTempDesired` / `HwcOpMode`).
+- New `switch` "Warmwasser-Boost" (`HwcSFMode` = load/auto).
 
 ## 1.0.0
 - Config flow pre-fills the host with the HA IP (editable for remote ebusd).
