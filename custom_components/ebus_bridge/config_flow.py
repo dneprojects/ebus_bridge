@@ -3,8 +3,10 @@ from __future__ import annotations
 
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.components import network
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .client import EbusdClient, EbusdError
@@ -48,9 +50,20 @@ class EbusdConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     title=user_input[CONF_HOST], data=user_input
                 )
 
+        # Host mit der HA-Host-IP vorbelegen (ebusd läuft i. d. R. lokal als Add-on).
+        if user_input and user_input.get(CONF_HOST):
+            default_host = user_input[CONF_HOST]
+        else:
+            try:
+                default_host = await network.async_get_source_ip(
+                    self.hass, target=network.MDNS_TARGET_IP
+                )
+            except HomeAssistantError:
+                default_host = ""
+
         schema = vol.Schema(
             {
-                vol.Required(CONF_HOST): str,
+                vol.Required(CONF_HOST, default=default_host): str,
                 vol.Required(CONF_PORT, default=DEFAULT_PORT): int,
                 vol.Required(CONF_HTTP_PORT, default=DEFAULT_HTTP_PORT): int,
             }

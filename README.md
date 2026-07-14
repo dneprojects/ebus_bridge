@@ -12,12 +12,20 @@ die eigentliche eBUS-Dekodierung; diese Integration ist die HA-Schicht darüber.
   Enum-Optionen, Feld-Struktur.
 - **Schreiben:** ebusd **TCP-Kommandoport** (Port 8888).
 
-## Entitäten (v0.5)
+## Voraussetzungen
+- Ein laufender **ebusd** mit erreichbaren Ports – am einfachsten das **ebusd-Add-on**
+  (Einstellungen → Add-ons). ebusd muss den eBUS bereits dekodieren (grüne Bus-LED).
+- **Beide Ports freigeben** und den HTTP-Port aktivieren:
+  - `8888/tcp` → `8888` (Schreiben)
+  - `8889/tcp` → `8889` (HTTP-JSON) — dazu **`--httpport=8889`** in `commandline_options`.
+- Schnelltest im Browser: `http://<HA-IP>:8889/data` liefert JSON.
+
+## Entitäten
 - **sensor** – je (nicht schreibbarem) Feld eine Entity (Mehrfeld-Splitting, z. B.
   `Status01` → Vorlauf/Rücklauf/… getrennt), Einheit/Geräteklasse aus den Defs.
 - **binary_sensor** – nicht schreibbare reine An/Aus-Felder (z. B. Pumpenstatus).
 - **number** – schreibbare numerische Sollwerte (min/max/step aus dem Datentyp;
-  °C-Sollwerte 0–100/0,5).
+  °C-Sollwerte −60…150/0,5).
 - **select** – schreibbare Enum-Felder (Betriebsarten) mit echten Optionen.
 - **switch** – schreibbare reine An/Aus-Felder.
 - **calendar** – Vaillant-Wochen-Zeitprogramme (`<Prefix>Timer_<Tag><Slot>`), je
@@ -49,22 +57,14 @@ Integration → **Konfigurieren**:
 - **Ausschluss** – kommagetrennte Namensteile (Default `Timer`, damit die vielen
   Zeitprogramm-Felder nicht als Sensoren erscheinen – der Kalender nutzt sie weiter).
 
-## Voraussetzung
-Im ebusd-Add-on **beide Ports freigeben** (Configuration → **Network**):
-- `8888/tcp` → `8888` (Schreiben)
-- `8889/tcp` → `8889` (HTTP-JSON) — dazu **`--httpport=8889`** in `commandline_options`.
-
-Test:
-```
-telnet <HA-IP> 8888          # -> info
-http://<HA-IP>:8889/data     # -> JSON im Browser
-```
-
 ## Installation
-1. Ordner `custom_components/ebus_bridge/` nach `…/config/custom_components/` kopieren.
-2. HA neu starten.
-3. **Einstellungen → Geräte & Dienste → Integration hinzufügen → „eBUS Bridge"**.
-4. Host = HA-IP, TCP-Port `8888`, HTTP-Port `8889`.
+**Über HACS** (empfohlen): HACS → ⋮ → *Benutzerdefinierte Repositories* →
+`https://github.com/dneprojects/ebus_bridge`, Kategorie *Integration* → installieren → HA neu starten.
+**Manuell:** Ordner `custom_components/ebus_bridge/` nach `…/config/custom_components/` kopieren → HA neu starten.
+
+Danach: **Einstellungen → Geräte & Dienste → Integration hinzufügen → „eBUS Bridge"**.
+Der **Host ist mit der HA-IP vorbelegt** (läuft ebusd lokal als Add-on → einfach bestätigen;
+Remote-ebusd → IP überschreiben). Ports `8888`/`8889` sind voreingestellt.
 
 ## Grenzen
 - **number-Grenzen** werden aus dem ebusd-Datentyp abgeleitet (min/max liefert die

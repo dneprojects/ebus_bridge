@@ -1,75 +1,44 @@
 # Changelog
 
+## 1.0.0
+- Config-Flow belegt den Host automatisch mit der HA-IP vor (überschreibbar für Remote-ebusd).
+- Erste öffentliche Version (HACS).
+
 ## 0.10.0
-- **Eigenes Brand-Icon** (`brand/icon.png` + `icon@2x.png`) – seit HA 2026.3
-  liefern Integrationen ihr Icon selbst mit; lokal hat Vorrang vor der brands-CDN.
-  eBUS-Schriftzug, gedämpfter Terracotta→Tiefrot-Verlauf, transparente Ecken.
+- Eigenes Brand-Icon (`brand/`-Ordner), ab HA 2026.3 lokal mit Vorrang vor der brands-CDN.
 
 ## 0.9.0
-- **Fix:** °C-Sollwerte werden nicht mehr auf 0–100 geklemmt (Spanne −60…150),
-  sodass negative Werte (z. B. Außentemperatur-Schwellen) einstellbar bleiben.
-- **Bridge-Gerät** heißt nur noch „eBUS Bridge" (ohne IP); der **Host** ist jetzt
-  ein eigener Text-Sensor (Diagnose).
-- **Tests + CI:** Unit-Tests für `model.py`; GitHub Actions mit hassfest,
-  HACS-Validation, ruff und pytest. `codeowners` gesetzt.
+- Fix: °C-Sollwerte nicht mehr auf 0–100 geklemmt (Spanne −60…150, negative Werte möglich).
+- Bridge-Gerät heißt nur „eBUS Bridge"; Host als eigener Text-Sensor (Diagnose).
+- Tests für `model.py` + CI (hassfest, HACS, ruff, pytest); `codeowners` gesetzt.
 
 ## 0.8.0
-- **Bridge-Diagnose** aus ebusds globalem Abschnitt, am Bridge-Gerät (Kategorie
-  Diagnose): Signal (Verbindung), Symbolrate/Max, Reconnects, Master am Bus,
-  ebusd-Adresse (QQ), bekannte Nachrichten. ebusd-Version als `sw_version` der Bridge.
-- **Enhanced-Timing** (Arbitrierung min/max, Symbol-Latenz min/max) als Diagnose,
-  **standardmäßig deaktiviert**.
+- Bridge-Diagnose aus ebusds globalem Abschnitt (Signal, Symbolrate, Reconnects, Master, QQ, Version).
+- Enhanced-Timing (Arbitrierung/Latenz) als Diagnose, standardmäßig deaktiviert.
 
 ## 0.7.3
-- Icon-Heuristik **einheiten-first**: Temperaturen (°C/K) werden immer ein
-  Thermometer, Variante je Kontext (Kühlen → snowflake-thermometer, Vorlauf/Wasser
-  → thermometer-water, außen → sun-thermometer, Raum → home-thermometer, ΔK →
-  thermometer-lines). Gerätesymbole nur für Nicht-Temperatur-Felder.
+- Icon-Heuristik einheiten-first: Temperaturen immer als Thermometer-Variante.
 
 ## 0.7.2
-- **Passende mdi-Icons** für alle Entitäten (Sensor/number/select/switch/binary),
-  abgeleitet aus Feldname + Einheit (Pumpe, Heizkurve, Vorlauf, Kühlen, Modus …)
-  statt generischer Regler-Symbole.
+- Passende mdi-Icons für alle Entitäten statt generischer Regler-Symbole.
 
 ## 0.7.1
-- **Gerätenamen ohne „ebusd"** – Klarnamen je Kreis (Produktname wie sensoCOMFORT /
-  VR 71, sonst formatierter Kreis).
-- **Bridge-Elterngerät** „eBUS Bridge (<host>)“ – die eBUS-Kreise (sensoCOMFORT,
-  HWC, VR 71, WP0/WP1 …) hängen per `via_device` als **Kinder** darunter.
+- Klarnamen je Kreis (kein „ebusd"-Präfix); Bridge-Elterngerät, Kreise als Kinder (`via_device`).
 
 ## 0.7.0
-- **Kalender schreibbar** – Anlegen/Ändern/Löschen von Zeitfenstern, **sobald ebusd
-  eine schreibbare Tages-Nachricht `<Prefix>Timer_<Tag>` anbietet** (sonst bleibt der
-  Kalender wie bisher read-only). Universell/definitionsfrei: nutzt ebusds
-  `slotIndex;slotCount;von;bis[;temp]`-Konvention über den `write`-Durchreicher.
-  Soll-Temperatur wird aus dem Termin-Titel gelesen; Änderungen gelten fürs ganze
-  Wochen-Fenster. `slotCount`-Semantik best-effort (final zu verifizieren auf einem
-  System mit schreibbaren Timern).
+- Kalender schreibbar (Anlegen/Ändern/Löschen), sobald ebusd eine Timer-Write-Nachricht bietet.
 
 ## 0.6.0
-- Neuer Service **`ebus_bridge.write`** (circuit · message · value) – generischer
-  Durchreicher zu ebusds `write`, Mehrfeld-Werte mit `;`. Liest nach dem Schreiben
-  frisch zurück und gibt den aktuellen Wert als Response zurück. Grundlage für
-  späteres Kalender-Schreiben (sobald ebusd eine schreibbare Timer-Nachricht bietet).
+- Neuer Service `ebus_bridge.write` (generischer Durchreicher zu ebusds `write`, mit Read-back).
 
 ## 0.5.0
-- Umbenannt in **„eBUS Bridge"** – Anzeigename **und** Domain `ebus_bridge`
-  (Abgrenzung zur HACS-Integration „eBus Direct"; herstellerneutral, Vaillant &
-  weitere eBUS-Geräte).
-- Neue Plattform **switch** für schreibbare reine An/Aus-Felder (aus `select` ausgegliedert).
-- `issue_tracker` in der manifest ergänzt.
+- Umbenannt in „eBUS Bridge" (Domain `ebus_bridge`); neue Plattform switch; `issue_tracker`.
 
 ## 0.4.1
-- Fix: nach jedem Schreiben (number/select) erzwungener `read -f`, damit nicht
-  gepollte Sollwerte nicht auf „nicht verfügbar" fallen.
+- Fix: erzwungener Read nach dem Schreiben, damit Sollwerte nicht „nicht verfügbar" werden.
 
 ## 0.4.0
-- Neue Plattform **binary_sensor** für nicht schreibbare An/Aus-Felder.
-- Neue Plattform **calendar**: Vaillant-Wochen-Zeitprogramme als read-only-Kalender
-  (je Wochenprogramm einer, Fenster + Soll-Temperatur).
-- **Options-Flow**: Poll-Intervall und Ausschluss-Filter (Default `Timer`).
+- Neue Plattformen binary_sensor + calendar (read-only); Options-Flow (Poll-Intervall, Ausschluss).
 
 ## 0.3.0
-- Umbau auf ebusd **HTTP-JSON** (Port 8889) für Lesen/Definitionen, **TCP** (8888)
-  fürs Schreiben; feld-basiertes Entity-Modell mit fixem Entity-Satz.
-- Geräte-Metadaten (Hersteller/Modell/SW/HW) aus den Scan-Definitionen.
+- Umbau auf ebusd HTTP-JSON (lesen) + TCP (schreiben); feld-basiertes Entity-Modell; Geräte-Metadaten.
