@@ -1,44 +1,44 @@
 # Changelog
 
 ## 1.0.0
-- Config-Flow belegt den Host automatisch mit der HA-IP vor (überschreibbar für Remote-ebusd).
-- Erste öffentliche Version (HACS).
+- Config flow pre-fills the host with the HA IP (editable for remote ebusd).
+- First public release (HACS).
 
 ## 0.10.0
-- Eigenes Brand-Icon (`brand/`-Ordner), ab HA 2026.3 lokal mit Vorrang vor der brands-CDN.
+- Bundled brand icon (`brand/` folder); local icon takes priority over the brands CDN (HA 2026.3+).
 
 ## 0.9.0
-- Fix: °C-Sollwerte nicht mehr auf 0–100 geklemmt (Spanne −60…150, negative Werte möglich).
-- Bridge-Gerät heißt nur „eBUS Bridge"; Host als eigener Text-Sensor (Diagnose).
-- Tests für `model.py` + CI (hassfest, HACS, ruff, pytest); `codeowners` gesetzt.
+- Fix: °C setpoints no longer clamped to 0–100 (range −60…150, negative values possible).
+- Bridge device is named just "eBUS Bridge"; host exposed as its own text sensor (diagnostic).
+- Unit tests for `model.py` + CI (hassfest, HACS, ruff, pytest); `codeowners` set.
 
 ## 0.8.0
-- Bridge-Diagnose aus ebusds globalem Abschnitt (Signal, Symbolrate, Reconnects, Master, QQ, Version).
-- Enhanced-Timing (Arbitrierung/Latenz) als Diagnose, standardmäßig deaktiviert.
+- Bridge diagnostics from ebusd's global section (signal, symbol rate, reconnects, masters, QQ, version).
+- Enhanced timing (arbitration/latency) as diagnostics, disabled by default.
 
 ## 0.7.3
-- Icon-Heuristik einheiten-first: Temperaturen immer als Thermometer-Variante.
+- Icon heuristic, unit-first: temperatures always as a thermometer variant.
 
 ## 0.7.2
-- Passende mdi-Icons für alle Entitäten statt generischer Regler-Symbole.
+- Meaningful mdi icons for all entities instead of generic slider symbols.
 
 ## 0.7.1
-- Klarnamen je Kreis (kein „ebusd"-Präfix); Bridge-Elterngerät, Kreise als Kinder (`via_device`).
+- Clean per-circuit device names (no "ebusd" prefix); bridge parent device, circuits as children (`via_device`).
 
 ## 0.7.0
-- Kalender schreibbar (Anlegen/Ändern/Löschen), sobald ebusd eine Timer-Write-Nachricht bietet.
+- Writable calendar (create/update/delete) once ebusd exposes a timer write message.
 
 ## 0.6.0
-- Neuer Service `ebus_bridge.write` (generischer Durchreicher zu ebusds `write`, mit Read-back).
+- New `ebus_bridge.write` service (generic pass-through to ebusd's `write`, with read-back).
 
 ## 0.5.0
-- Umbenannt in „eBUS Bridge" (Domain `ebus_bridge`); neue Plattform switch; `issue_tracker`.
+- Renamed to "eBUS Bridge" (domain `ebus_bridge`); new switch platform; `issue_tracker` added.
 
 ## 0.4.1
-- Fix: erzwungener Read nach dem Schreiben, damit Sollwerte nicht „nicht verfügbar" werden.
+- Fix: forced read after each write so setpoints don't fall to "unavailable".
 
 ## 0.4.0
-- Neue Plattformen binary_sensor + calendar (read-only); Options-Flow (Poll-Intervall, Ausschluss).
+- New binary_sensor + calendar (read-only) platforms; options flow (poll interval, exclude).
 
 ## 0.3.0
-- Umbau auf ebusd HTTP-JSON (lesen) + TCP (schreiben); feld-basiertes Entity-Modell; Geräte-Metadaten.
+- Switched to ebusd HTTP-JSON (read) + TCP (write); field-based entity model; device metadata.
