@@ -22,7 +22,10 @@ from .const import (
 from .coordinator import EbusdCoordinator
 from .services import async_setup_services, async_unload_services
 
-PLATFORMS = ["binary_sensor", "calendar", "sensor", "number", "select", "switch"]
+PLATFORMS = [
+    "binary_sensor", "calendar", "sensor", "number", "select", "switch",
+    "water_heater",
+]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

@@ -31,7 +31,11 @@ definitions); this integration is the HA layer on top.
 - **number** – writable numeric setpoints (min/max/step from the data type;
   °C setpoints −60…150/0.5).
 - **select** – writable enum fields (operating modes) with real options.
-- **switch** – writable pure on/off fields.
+- **switch** – writable pure on/off fields, plus a curated **"Warmwasser-Boost"**
+  (DHW one-time charge) when `HwcSFMode` provides it.
+- **water_heater** – DHW as a proper water-heater tile (curated Vaillant overlay:
+  current `HwcStorageTemp`, target `HwcTempDesired`, mode `HwcOpMode`) — appears only
+  when those registers exist.
 - **calendar** – Vaillant weekly schedules (`<Prefix>Timer_<Day><Slot>`), one calendar
   per program (Z1/Z2/Z3/Hwc/Cc …). Slot = `htm`–`htm_1`, title = target temperature.
   **Editable** (create/update/delete) **once ebusd exposes a writable per-day message
@@ -114,7 +118,11 @@ die eigentliche eBUS-Dekodierung; diese Integration ist die HA-Schicht darüber.
 - **number** – schreibbare numerische Sollwerte (min/max/step aus dem Datentyp;
   °C-Sollwerte −60…150/0,5).
 - **select** – schreibbare Enum-Felder (Betriebsarten) mit echten Optionen.
-- **switch** – schreibbare reine An/Aus-Felder.
+- **switch** – schreibbare reine An/Aus-Felder, plus ein kuratierter
+  **„Warmwasser-Boost"** (WW-Einmalladung), wenn `HwcSFMode` ihn anbietet.
+- **water_heater** – Warmwasser als echte water-heater-Kachel (kuratierter Vaillant-
+  Overlay: Ist `HwcStorageTemp`, Soll `HwcTempDesired`, Modus `HwcOpMode`) – erscheint
+  nur, wenn diese Register existieren.
 - **calendar** – Vaillant-Wochen-Zeitprogramme (`<Prefix>Timer_<Tag><Slot>`), je
   Wochenprogramm (Z1/Z2/Z3/Hwc/Cc …) ein Kalender. Fenster = `htm`–`htm_1`,
   Titel = Soll-Temperatur. **Bearbeitbar** (Anlegen/Ändern/Löschen), **sobald ebusd

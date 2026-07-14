@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0
+- New `water_heater` entity for DHW (curated Vaillant overlay: maps `HwcStorageTemp`/`HwcTempDesired`/`HwcOpMode`).
+- New `switch` "Warmwasser-Boost" bound to the DHW one-time charge (`HwcSFMode` = load/auto).
+
 ## 1.0.0
 - Config flow pre-fills the host with the HA IP (editable for remote ebusd).
 - First public release (HACS).
