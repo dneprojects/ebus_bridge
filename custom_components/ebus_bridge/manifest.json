@@ -3,6 +3,7 @@
   "name": "eBUS Bridge",
   "codeowners": ["@dneprojects"],
   "config_flow": true,
+  "dependencies": ["network"],
   "documentation": "https://github.com/dneprojects/ebus_bridge",
   "integration_type": "hub",
   "iot_class": "local_polling",
