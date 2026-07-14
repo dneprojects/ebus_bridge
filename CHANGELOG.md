@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.3
+- Icon-Heuristik **einheiten-first**: Temperaturen (°C/K) werden immer ein
+  Thermometer, Variante je Kontext (Kühlen → snowflake-thermometer, Vorlauf/Wasser
+  → thermometer-water, außen → sun-thermometer, Raum → home-thermometer, ΔK →
+  thermometer-lines). Gerätesymbole nur für Nicht-Temperatur-Felder.
+
 ## 0.7.2
 - **Passende mdi-Icons** für alle Entitäten (Sensor/number/select/switch/binary),
   abgeleitet aus Feldname + Einheit (Pumpe, Heizkurve, Vorlauf, Kühlen, Modus …)

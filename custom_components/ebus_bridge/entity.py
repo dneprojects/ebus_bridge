@@ -27,33 +27,26 @@ def _device_name(circuit: str, model: str | None) -> str:
     return circuit.replace("_", " ").upper()  # "vr_71" -> "VR 71", "wp0" -> "WP0"
 
 
-# Icon-Heuristik: erst Namens-Stichwort (spezifisch -> allgemein), dann Einheit.
-_ICON_BY_KEYWORD: list[tuple[str, str]] = [
+# Icon-Heuristik: EINHEIT zuerst. Temperaturen (°C/K) -> Thermometer-Variante je
+# Kontext; sonst Gerätesymbol nach Namens-Stichwort, zuletzt Einheit.
+_TEMP_UNITS = {"°C", "K"}
+
+_NONTEMP_KEYWORD: list[tuple[str, str]] = [
     ("pump", "mdi:pump"),
     ("valve", "mdi:pipe-valve"),
     ("compressor", "mdi:heat-pump"),
     ("fan", "mdi:fan"),
     ("curve", "mdi:chart-bell-curve"),
     ("cool", "mdi:snowflake"),
-    ("cylinder", "mdi:water-boiler"),
-    ("charge", "mdi:water-boiler"),
-    ("dhw", "mdi:water-boiler"),
-    ("hwc", "mdi:water-boiler"),
-    ("water", "mdi:water-boiler"),
-    ("flow", "mdi:thermometer-water"),
-    ("room", "mdi:home-thermometer"),
     ("heat", "mdi:radiator"),
     ("mode", "mdi:tune-variant"),
     ("status", "mdi:information-outline"),
     ("pressure", "mdi:gauge"),
     ("energy", "mdi:lightning-bolt"),
     ("power", "mdi:flash"),
-    ("temp", "mdi:thermometer"),
     ("time", "mdi:clock-outline"),
 ]
 _ICON_BY_UNIT: dict[str, str] = {
-    "°C": "mdi:thermometer",
-    "K": "mdi:thermometer-lines",
     "%": "mdi:percent",
     "bar": "mdi:gauge",
     "kWh": "mdi:lightning-bolt",
@@ -67,12 +60,29 @@ _ICON_BY_UNIT: dict[str, str] = {
 }
 
 
+def _temp_icon(text: str, unit: str) -> str:
+    if "cool" in text:
+        return "mdi:snowflake-thermometer"
+    if "room" in text:
+        return "mdi:home-thermometer"
+    if any(k in text for k in ("flow", "water", "dhw", "hwc", "cylinder")):
+        return "mdi:thermometer-water"
+    if any(k in text for k in ("outside", "outdoor", "ambient", "extern")):
+        return "mdi:sun-thermometer"
+    if unit == "K":
+        return "mdi:thermometer-lines"
+    return "mdi:thermometer"
+
+
 def _icon_for(desc: FieldDesc) -> str | None:
     text = f"{desc.message} {desc.field}".lower()
-    for keyword, icon in _ICON_BY_KEYWORD:
+    unit = desc.unit or ""
+    if unit in _TEMP_UNITS:
+        return _temp_icon(text, unit)
+    for keyword, icon in _NONTEMP_KEYWORD:
         if keyword in text:
             return icon
-    return _ICON_BY_UNIT.get(desc.unit or "")
+    return _ICON_BY_UNIT.get(unit)
 
 
 def build_device_info(coordinator: EbusdCoordinator, circuit: str) -> DeviceInfo:
