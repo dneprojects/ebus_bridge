@@ -14,6 +14,11 @@ jobs:
 
   hacs:
     runs-on: ubuntu-latest
+    # Die HACS-Action liest Datei-Inhalte über die GitHub-API; bei PRIVATEM Repo
+    # schlagen die inhalts-basierten Checks (hacsjson, integration_manifest) mit
+    # "Got None" fehl. Sobald das Repo öffentlich ist, wird der Check streng grün –
+    # dann continue-on-error entfernen.
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: hacs/action@main
