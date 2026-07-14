@@ -71,6 +71,7 @@ async def async_setup_entry(
         for spec in _GLOBAL_SENSORS
         if spec[0] in coordinator.global_data
     )
+    async_add_entities([EbusdHostSensor(coordinator)])
 
 
 class EbusdSensor(EbusdBaseEntity, SensorEntity):
@@ -123,3 +124,21 @@ class EbusdGlobalSensor(CoordinatorEntity[EbusdCoordinator], SensorEntity):
     @property
     def native_value(self):
         return self.coordinator.global_data.get(self._key)
+
+
+class EbusdHostSensor(CoordinatorEntity[EbusdCoordinator], SensorEntity):
+    """Host/IP der ebusd-Instanz als Text-Sensor an der Bridge."""
+
+    _attr_has_entity_name = True
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_name = "Host"
+    _attr_icon = "mdi:ip-network"
+
+    def __init__(self, coordinator: EbusdCoordinator) -> None:
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{DOMAIN}_{coordinator.entry_id}_host"
+        self._attr_device_info = DeviceInfo(identifiers={coordinator.bridge_id})
+
+    @property
+    def native_value(self) -> str:
+        return self.coordinator.host

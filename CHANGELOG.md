@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.0
+- **Fix:** °C-Sollwerte werden nicht mehr auf 0–100 geklemmt (Spanne −60…150),
+  sodass negative Werte (z. B. Außentemperatur-Schwellen) einstellbar bleiben.
+- **Bridge-Gerät** heißt nur noch „eBUS Bridge" (ohne IP); der **Host** ist jetzt
+  ein eigener Text-Sensor (Diagnose).
+- **Tests + CI:** Unit-Tests für `model.py`; GitHub Actions mit hassfest,
+  HACS-Validation, ruff und pytest. `codeowners` gesetzt.
+
 ## 0.8.0
 - **Bridge-Diagnose** aus ebusds globalem Abschnitt, am Bridge-Gerät (Kategorie
   Diagnose): Signal (Verbindung), Symbolrate/Max, Reconnects, Master am Bus,

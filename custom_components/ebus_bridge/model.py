@@ -113,7 +113,8 @@ def parse_definitions(data: dict[str, Any]) -> list[FieldDesc]:
             values = fd.get("values") or None
             lo, hi, step = _TYPE_BOUNDS.get(btype, (None, None, None))
             if fd.get("unit") == "°C":
-                lo, hi, step = 0, 100, 0.5
+                # realistische Heizungs-Spanne; erlaubt Außen-/Sollwerte < 0 °C
+                lo, hi, step = -60, 150, 0.5
             out.append(FieldDesc(
                 circuit=circuit, message=name, field=fname,
                 label=name if not multi else f"{name} {fname}",
