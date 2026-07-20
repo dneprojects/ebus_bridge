@@ -36,6 +36,16 @@ _GLOBAL_SENSORS: list[tuple] = [
 ]
 
 
+def _precision(desc: FieldDesc) -> int | None:
+    """Nachkommastellen aus der Schrittweite des Datentyps (UCH -> 0, D2C -> 1)."""
+    if not desc.numeric or not desc.step:
+        return None
+    if desc.step >= 1:
+        return 0
+    text = f"{desc.step:g}"
+    return len(text.split(".")[1]) if "." in text else 0
+
+
 def _classes(desc: FieldDesc):
     """device_class + state_class aus der Einheit (fehlerfrei kombiniert)."""
     unit = desc.unit
@@ -81,6 +91,9 @@ class EbusdSensor(EbusdBaseEntity, SensorEntity):
         if desc.unit:
             self._attr_native_unit_of_measurement = desc.unit
         self._attr_device_class, self._attr_state_class = _classes(desc)
+        precision = _precision(desc)
+        if precision is not None:
+            self._attr_suggested_display_precision = precision
 
     @property
     def native_value(self):

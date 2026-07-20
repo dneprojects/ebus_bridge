@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.1
+- Sensor display precision derived from the data type (integer registers show without decimals).
+
 ## 1.2.0
 - New `climate` entity per active heating zone (`Z<n>RoomTemp` / `Z<n>DayTemp` / `Z<n>OpMode`).
 
