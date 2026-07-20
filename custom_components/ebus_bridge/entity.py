@@ -1,9 +1,12 @@
 """Gemeinsame Basisklasse für alle ebusd-Direct-Entities."""
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 
+from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
@@ -97,6 +100,40 @@ def build_device_info(coordinator: EbusdCoordinator, circuit: str) -> DeviceInfo
         hw_version=meta.get("hw"),
         via_device=coordinator.bridge_id,
     )
+
+
+def add_fields_dynamically(
+    coordinator: EbusdCoordinator,
+    async_add_entities: AddEntitiesCallback,
+    matches: Callable[[FieldDesc], bool],
+    build: Callable[[FieldDesc], Any],
+) -> Callable[[], None]:
+    """Entities anlegen, sobald ein Feld erstmals einen Wert hat.
+
+    ebusds Cache ist nach einem Neustart leer und füllt sich erst nach und nach.
+    Würde man nur beim Setup prüfen, fehlte dauerhaft alles, was zu diesem
+    Zeitpunkt noch keinen Wert hatte -- und der Nutzer müsste neu laden. Felder
+    ohne Wert legen umgekehrt keine Karteileichen an (nicht bestückte Hardware).
+
+    Rückgabe: Abmelde-Funktion für den Coordinator-Listener.
+    """
+    known: set[tuple[str, str, str]] = set()
+
+    @callback
+    def _sync() -> None:
+        new = []
+        for desc in coordinator.fields:
+            if desc.key in known or not matches(desc):
+                continue
+            if coordinator.data.get(desc.key) is None:
+                continue
+            known.add(desc.key)
+            new.append(build(desc))
+        if new:
+            async_add_entities(new)
+
+    _sync()
+    return coordinator.async_add_listener(_sync)
 
 
 class EbusdBaseEntity(CoordinatorEntity[EbusdCoordinator]):

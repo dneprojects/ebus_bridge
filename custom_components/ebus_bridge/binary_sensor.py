@@ -14,7 +14,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import EbusdCoordinator
-from .entity import EbusdBaseEntity
+from .entity import EbusdBaseEntity, add_fields_dynamically
 from .model import FieldDesc, is_binary, value_is_on
 
 
@@ -22,13 +22,13 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     coordinator: EbusdCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities(
-        EbusdBinarySensor(coordinator, d)
-        for d in coordinator.fields
-        if not d.writable
-        and is_binary(d)
-        and coordinator.included(d)
-        and coordinator.data.get(d.key) is not None
+    entry.async_on_unload(
+        add_fields_dynamically(
+            coordinator,
+            async_add_entities,
+            lambda d: not d.writable and is_binary(d) and coordinator.included(d),
+            lambda d: EbusdBinarySensor(coordinator, d),
+        )
     )
     if "signal" in coordinator.global_data:
         async_add_entities([EbusdSignalSensor(coordinator)])

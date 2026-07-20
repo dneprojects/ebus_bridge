@@ -9,7 +9,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .client import EbusdError
 from .const import DOMAIN
 from .coordinator import EbusdCoordinator
-from .entity import EbusdBaseEntity
+from .entity import EbusdBaseEntity, add_fields_dynamically
 from .model import FieldDesc
 
 
@@ -17,13 +17,13 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     coordinator: EbusdCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities(
-        EbusdNumber(coordinator, d)
-        for d in coordinator.fields
-        if d.writable
-        and d.numeric
-        and coordinator.included(d)
-        and coordinator.data.get(d.key) is not None
+    entry.async_on_unload(
+        add_fields_dynamically(
+            coordinator,
+            async_add_entities,
+            lambda d: d.writable and d.numeric and coordinator.included(d),
+            lambda d: EbusdNumber(coordinator, d),
+        )
     )
 
 

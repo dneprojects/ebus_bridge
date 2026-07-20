@@ -13,7 +13,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .client import EbusdError
 from .const import DOMAIN
 from .coordinator import EbusdCoordinator
-from .entity import EbusdBaseEntity, build_device_info
+from .entity import EbusdBaseEntity, add_fields_dynamically, build_device_info
 from .model import FieldDesc, bool_tokens, is_binary, value_is_on
 
 # Kuratierter Warmwasser-Boost aus der Sonderfunktion HwcSFMode (Einmalladung).
@@ -26,13 +26,13 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     coordinator: EbusdCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities(
-        EbusdSwitch(coordinator, d)
-        for d in coordinator.fields
-        if d.writable
-        and is_binary(d)
-        and coordinator.included(d)
-        and coordinator.data.get(d.key) is not None
+    entry.async_on_unload(
+        add_fields_dynamically(
+            coordinator,
+            async_add_entities,
+            lambda d: d.writable and is_binary(d) and coordinator.included(d),
+            lambda d: EbusdSwitch(coordinator, d),
+        )
     )
     # Kuratierter Overlay: Warmwasser-Boost (HwcSFMode kennt den Wert "load")
     seen: set[str] = set()

@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.1
+- Entities now appear as soon as a value arrives, instead of only those that happened to be cached at startup.
+
 ## 1.5.0
 - Values the bus refreshes on its own are left untouched; only genuinely stale messages are topped up, a few per cycle.
 - Removed the `poll_priority` option: registering hundreds of ebusd polls slowed every value down instead of speeding it up.
