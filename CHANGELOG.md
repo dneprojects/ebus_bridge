@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.2
+- Stale messages are topped up at 20 per cycle while catching up, easing back to 8 once the backlog is gone.
+
 ## 1.5.1
 - Entities now appear as soon as a value arrives, instead of only those that happened to be cached at startup.
 

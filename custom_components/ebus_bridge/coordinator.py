@@ -1,6 +1,7 @@
 """DataUpdateCoordinator: Definitionen einmalig, Werte zyklisch (HTTP-JSON)."""
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import timedelta
 from typing import Any
@@ -17,8 +18,11 @@ _LOGGER = logging.getLogger(__name__)
 # Werte, die der Bus binnen dieser Zeit von allein nachliefert (fremde Master,
 # die ebusd passiv mithört), brauchen kein erzwungenes Lesen.
 _SELF_MAINTAINED_S = 90
-# Obergrenze erzwungener Bus-Reads je Zyklus -- ebusd führt sie blockierend aus.
-_MAX_TOPUP_PER_CYCLE = 4
+# Erzwungene Bus-Reads je Zyklus: viele, solange ein Rückstand aufzuholen ist,
+# danach nur noch die Grundlast. ebusd führt sie blockierend aus, deshalb gedeckelt.
+_TOPUP_MAX = 20
+_TOPUP_MIN = 8
+_TOPUP_PER_BACKLOG = 20  # je so viele offene Nachrichten ein Read mehr
 
 
 class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
@@ -88,8 +92,18 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         return not any(pattern in name for pattern in self._exclude)
 
     async def _refresh(self, targets: list[tuple[str, str]]) -> None:
-        """Nachrichten direkt vom Bus nachholen (ebusd liest dabei blockierend)."""
+        """Nachrichten direkt vom Bus nachholen (ebusd liest dabei blockierend).
+
+        Zeitbremse: antwortet ein Gerät nicht, läuft der Read in ebusds eigenen
+        Timeout. Ohne Deckel könnten wenige solcher Nachrichten den Zyklus
+        überziehen und die aktuellen Werte ausbremsen.
+        """
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + max(5.0, self._max_age * 0.5)
         for circuit, message in targets:
+            if loop.time() > deadline:
+                _LOGGER.debug("Zeitbudget fürs Nachholen erschöpft, Rest folgt")
+                return
             try:
                 await self.client.refresh(circuit, message, self._max_age)
             except EbusdError as err:  # einzelne Nachricht nicht lesbar -> weiter
@@ -124,7 +138,7 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         targets = list(self._fast)
         stale = self._stale()
         if stale:
-            take = _MAX_TOPUP_PER_CYCLE
+            take = min(_TOPUP_MAX, max(_TOPUP_MIN, len(stale) // _TOPUP_PER_BACKLOG))
             self._cursor %= len(stale)
             targets += stale[self._cursor : self._cursor + take]
             self._cursor += take
