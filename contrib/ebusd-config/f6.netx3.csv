@@ -1,0 +1,24 @@
+type,circuit,level,name,comment,qq,zz,pbsb,id,*name,part,type,divisor/values,unit,comment
+# Vaillant sensoNET VR 921 (Scan: MF=Vaillant;ID=NETX3) auf Adresse f6.
+#
+# Die NETX ist das Internet-Modul zur myVaillant-Cloud. Sie ist am Bus ein sehr
+# aktiver MASTER -- sie fragt die anderen Geraete staendig ab (im ebusd-Log die
+# vielen QQ=f1-Zeilen) -- gibt selbst aber praktisch nichts heraus. Gemessen am
+# realen Geraet (SW=0126, HW=0404):
+#
+#   hex f6b503020001   -> 0a ff*10   Fehlerspeicher, 5 leere Plaetze  <- nutzbar
+#   hex f6b5040100     -> 00         quittiert, null Datenbytes
+#   hex f6b509030d1800 -> 00         quittiert, null Datenbytes
+#   hex f6b5110101     -> 00         quittiert, null Datenbytes
+#
+# Diese Datei existiert deshalb nicht wegen der Daten, sondern damit der Scan
+# sauber durchlaeuft: ohne sie meldet ebusd dauerhaft
+#   [main error] unable to load scan config f6: no file from vaillant with prefix f6 found
+# Keine Poll-Prioritaet: ebusd rotiert nur ueber Nachrichten mit r<n>, und ein
+# dauerhaft leerer Fehlerspeicher gehoert dort nicht hinein.
+#
+# Vgl. john30/ebusd-configuration#515 -- dort wurde ein f6-File mangels
+# abfragbarer Werte abgelehnt. Das ist nach obiger Messung berechtigt; diese
+# Datei beansprucht ausdruecklich nicht, mehr zu koennen.
+*r,netx
+r,,,Currenterror,current errors,,,b503,0001,error,,UIN,,,error number,error_1,,UIN,,,error number,error_2,,UIN,,,error number,error_3,,UIN,,,error number,error_4,,UIN,,,error number
