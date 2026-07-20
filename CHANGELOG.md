@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.4.0
+- New option `fast`: selected messages are read straight from the bus each cycle, so they stay as fresh as the poll interval.
+
 ## 1.3.0
 - Integration registers ebusd poll priorities itself, so values stay fresh without MQTT (option `poll_priority`, 0 = off).
 

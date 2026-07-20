@@ -12,12 +12,14 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .client import EbusdClient, EbusdError
 from .const import (
     CONF_EXCLUDE,
+    CONF_FAST,
     CONF_HOST,
     CONF_HTTP_PORT,
     CONF_POLL_PRIORITY,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
     DEFAULT_EXCLUDE,
+    DEFAULT_FAST,
     DEFAULT_HTTP_PORT,
     DEFAULT_POLL_PRIORITY,
     DEFAULT_PORT,
@@ -96,6 +98,10 @@ class EbusdOptionsFlow(config_entries.OptionsFlow):
                 vol.Optional(
                     CONF_EXCLUDE,
                     default=opts.get(CONF_EXCLUDE, DEFAULT_EXCLUDE),
+                ): str,
+                vol.Optional(
+                    CONF_FAST,
+                    default=opts.get(CONF_FAST, DEFAULT_FAST),
                 ): str,
                 vol.Optional(
                     CONF_POLL_PRIORITY,

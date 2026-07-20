@@ -25,6 +25,7 @@
         "data": {
           "scan_interval": "Poll-Intervall (Sekunden)",
           "exclude": "Nachrichtennamen ausschließen (Teilstrings, kommagetrennt, z. B. Timer)",
+          "fast": "Direkt vom Bus lesen (Teilstrings, kommagetrennt) – diese Werte sind so frisch wie das Poll-Intervall. Sparsam einsetzen!",
           "poll_priority": "ebusd-Poll-Priorität (0 = aus, 1 = häufigste)"
         }
       }

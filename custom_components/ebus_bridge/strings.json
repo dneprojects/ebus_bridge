@@ -25,6 +25,7 @@
         "data": {
           "scan_interval": "Poll interval (seconds)",
           "exclude": "Exclude message-name substrings (comma-separated, e.g. Timer)",
+          "fast": "Read directly from the bus (substrings, comma-separated) – these stay as fresh as the poll interval. Use sparingly!",
           "poll_priority": "ebusd poll priority (0 = off, 1 = most frequent)"
         }
       }

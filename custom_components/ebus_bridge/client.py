@@ -59,6 +59,14 @@ class EbusdClient:
         """
         await self._get(f"/{circuit}/{message}?exact=1&poll={priority}")
 
+    async def refresh(self, circuit: str, message: str, max_age: int) -> None:
+        """Nachricht direkt vom Bus lesen, falls der Cache älter als `max_age` ist.
+
+        ebusd führt den Bus-Read dabei blockierend aus (mainloop.cpp: readFromBus),
+        deshalb nur für wenige, wirklich zeitkritische Nachrichten verwenden.
+        """
+        await self._get(f"/{circuit}/{message}?exact=1&required=1&maxage={max_age}")
+
     # ---- TCP (Schreiben + Verbindungstest) ---------------------------------
     async def _command(self, cmd: str) -> list[str]:
         try:

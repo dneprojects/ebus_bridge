@@ -12,12 +12,14 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .client import EbusdClient, EbusdError
 from .const import (
     CONF_EXCLUDE,
+    CONF_FAST,
     CONF_HOST,
     CONF_HTTP_PORT,
     CONF_POLL_PRIORITY,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
     DEFAULT_EXCLUDE,
+    DEFAULT_FAST,
     DEFAULT_HTTP_PORT,
     DEFAULT_POLL_PRIORITY,
     DEFAULT_SCAN_INTERVAL,
@@ -55,6 +57,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if p.strip()
     ]
 
+    fast = [
+        p.strip().lower()
+        for p in entry.options.get(CONF_FAST, DEFAULT_FAST).split(",")
+        if p.strip()
+    ]
+
     priority = entry.options.get(CONF_POLL_PRIORITY, DEFAULT_POLL_PRIORITY)
     if priority:
         await _register_polls(client, fields, exclude, priority)
@@ -62,7 +70,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     host = entry.data[CONF_HOST]
     coordinator = EbusdCoordinator(
         hass, client, fields, device_meta, scan_interval, exclude,
-        entry.entry_id, host,
+        entry.entry_id, host, fast,
     )
     await coordinator.async_config_entry_first_refresh()
 

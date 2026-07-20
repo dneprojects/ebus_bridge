@@ -28,6 +28,7 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         exclude: list[str],
         entry_id: str,
         host: str,
+        fast: list[str] | None = None,
     ) -> None:
         super().__init__(
             hass,
@@ -42,6 +43,31 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         self.entry_id = entry_id
         self.host = host
         self.global_data: dict[str, Any] = {}
+        self._max_age = scan_interval
+        self._fast = self._collect_fast(fields, fast or [])
+        if self._fast:
+            _LOGGER.info(
+                "Direkt vom Bus je %d s: %s",
+                scan_interval,
+                ", ".join(f"{c}/{m}" for c, m in self._fast),
+            )
+
+    def _collect_fast(
+        self, fields: list[FieldDesc], patterns: list[str]
+    ) -> list[tuple[str, str]]:
+        """Nachrichten, die je Zyklus erzwungen gelesen werden (Namens-Teilstrings)."""
+        if not patterns:
+            return []
+        out: list[tuple[str, str]] = []
+        seen: set[tuple[str, str]] = set()
+        for desc in fields:
+            key = (desc.circuit, desc.message)
+            if key in seen or not self.included(desc):
+                continue
+            if any(p in desc.message.lower() for p in patterns):
+                seen.add(key)
+                out.append(key)
+        return out
 
     @property
     def bridge_id(self) -> tuple[str, str]:
@@ -53,7 +79,16 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         name = desc.message.lower()
         return not any(pattern in name for pattern in self._exclude)
 
+    async def _refresh_fast(self) -> None:
+        """Zeitkritische Nachrichten vor dem Sammel-Abruf frisch vom Bus holen."""
+        for circuit, message in self._fast:
+            try:
+                await self.client.refresh(circuit, message, self._max_age)
+            except EbusdError as err:  # einzelne Nachricht nicht lesbar -> weiter
+                _LOGGER.debug("Direktes Lesen von %s/%s: %s", circuit, message, err)
+
     async def _async_update_data(self) -> dict[tuple[str, str, str], Any]:
+        await self._refresh_fast()
         try:
             data = await self.client.get_data()
         except EbusdError as err:
