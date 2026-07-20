@@ -56,6 +56,7 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         self._max_age = scan_interval
         self._ages: dict[tuple[str, str], int] = {}
         self._cursor = 0
+        self._warned_ages = False
         self._fast = self._collect_fast(fields, fast or [])
         if self._fast:
             _LOGGER.info(
@@ -153,5 +154,13 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         self.global_data = parse_global(data)
         self._ages = parse_ages(data)
         values = parse_values(data)
+        if values and not self._ages and not self._warned_ages:
+            # Ohne `lastup` liesse sich nicht erkennen, was der Bus selbst pflegt
+            # -- es wuerde dann still gar nichts mehr nachgeholt.
+            self._warned_ages = True
+            _LOGGER.warning(
+                "ebusd liefert kein 'lastup' je Nachricht; Werte werden nicht "
+                "nachgeholt. Unterstützt diese ebusd-Version den Parameter 'full'?"
+            )
         _LOGGER.debug("ebusd: %d Felder mit Wert", len(values))
         return values

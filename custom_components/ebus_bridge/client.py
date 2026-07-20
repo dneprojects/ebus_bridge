@@ -50,10 +50,12 @@ class EbusdClient:
     async def get_data(self) -> dict[str, Any]:
         """Rohes /data (Werte + globaler Abschnitt).
 
-        `verbose` liefert zusätzlich `lastup` je Nachricht -> Grundlage dafür,
+        `full` liefert zusätzlich `lastup` je Nachricht -> Grundlage dafür,
         selbst zu erkennen, welche Werte der Bus ohnehin frisch hält.
+        Nicht `verbose`: das schaltet nur Einheiten und Kommentare zu
+        (mainloop.cpp; `lastup` hängt an OF_ALL_ATTRS, also an `full`).
         """
-        return await self._get("?verbose")
+        return await self._get("?full")
 
     async def refresh(self, circuit: str, message: str, max_age: int) -> None:
         """Nachricht direkt vom Bus lesen, falls der Cache älter als `max_age` ist.

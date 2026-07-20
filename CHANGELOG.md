@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.3
+- Fix: stale values were never topped up because message timestamps need `full`, not `verbose`.
+
 ## 1.5.2
 - Stale messages are topped up at 20 per cycle while catching up, easing back to 8 once the backlog is gone.
 
