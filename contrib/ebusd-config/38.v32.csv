@@ -1,0 +1,42 @@
+type,circuit,level,name,comment,qq,zz,pbsb,id,*name,part,type,divisor/values,unit,comment
+# Vaillant eloBlock VE24 (Art. 0010023696) hinter einem VR32/V32-Buskoppler auf
+# Adresse 38. Der Koppler meldet sich selbst als V32, reicht die Vaillant-Befehle
+# aber an das Geraet dahinter durch -- daher die BAI-Register ueber b509.
+#
+# Poll-Prioritaeten bewusst sparsam: ebusd liest EINE Nachricht je pollinterval
+# und rotiert ueber alle mit Prioritaet. Jeder ueberfluessige Eintrag verlangsamt
+# also die Werte, auf die es ankommt. r1 bekommt nur, was sich im Betrieb aendert
+# UND was kein anderer Busteilnehmer von sich aus abfragt -- den eloBlock hinter
+# dem Koppler fragt niemand ab. Alles andere (Einstellungen, Zaehlerstaende,
+# Typschild) traegt kein r<n> und wird bei Bedarf gelesen.
+*r,elo
+# --- Live-Werte (rotieren in ebusd) -----------------------------------------
+r1,,,FlowTemp,flow temperature,,,b509,0d1800,value,,D2C,,°C,temperature,ign,,IGN:1,,,
+r1,,,PumpState,pump status,,,b511,01,ign,,IGN:6,,,,value,,UCH,0=off;1=on;2=overrun;4=hwc,,pump status
+r1,,,Statenumber,status number,,,b509,0dab00,value,,UCH,,,
+r1,,,FlowTempDemand,d.09 flow setpoint demanded,,,b509,0d3900,value,,D2C,,°C,temperature
+# --- Langsam veraenderlich ---------------------------------------------------
+r,,,WaterPressure,water pressure,,,b509,0d0200,value,,FLT,,bar,pressure,ign,,IGN:1,,,
+r,,,Templimiter,temperature limiter,,,b509,0d7700,value,,UCH,240=off;15=on,,
+r,,,Currenterror,current errors,,,b503,0001,error,,UIN,,,error number,error_1,,UIN,,,error number,error_2,,UIN,,,error number,error_3,,UIN,,,error number,error_4,,UIN,,,error number
+# --- Zaehlerstaende ----------------------------------------------------------
+r,,,HcHours,d.80 heating operation hours,,,b509,0d2800,value,,UIN,,h,hours
+r,,,HcStarts,d.82 heating starts,,,b509,0d2900,value,,UIN,-100,,cycles
+r,,,HwcHours,d.81 DHW operation hours,,,b509,0d2200,value,,UIN,,h,hours
+r,,,HwcStarts,d.83 DHW starts,,,b509,0d2300,value,,UIN,-100,,cycles
+r,,,TemplimiterCutoffs,d.60 safety limiter cut offs,,,b509,0d2000,value,,UCH,,,
+# --- Einstellungen / Typschild (praktisch konstant) --------------------------
+r,,,PartloadHcKW,d.00 heating partload,,,b509,0d6c00,value,,UCH,,kW,heating part load
+r,,,PartloadHwcKW,d.77 hot water partload,,,b509,0da900,value,,UCH,,kW,storage charging power
+r,,,HwcTemp,d.03 DHW temperature,,,b509,0d0100,value,,D2C,,°C,temperature
+r,,,HwcTempMax,d.20 max tank setpoint,,,b509,0dd900,value,,D2C,,°C,temperature
+r,,,AntiCondensValue,d.85 minimal power,,,b509,0dec00,value,,UCH,,kW,
+r,,,PowerValue,power values (min/max),,,b509,0daa00,value,,HEX:6,,,
+r,,,HcPumpMode,d.18 pump mode,,,b509,0db700,value,,UCH,0=post_run;1=permanent;2=winter;3=eco,,
+r,,,BlockTimeHcMax,d.02 max blocking time,,,b509,0d2100,value,,UCH,,min,minutes
+r,,,EBusHeatcontrol,d.90 digital control recognized,,,b509,0d7400,value,,UCH,0=no;1=yes,,
+r,,,WarmstartEnable,d.66 warmstart,,,b509,0d5b00,value,,UCH,0=off;1=on,,
+r,,,CirPump,d.13 circulation pump,,,b509,0d7b00,value,,UCH,0=off;1=on,,
+r,,,BoilerType,boiler type,,,b509,0d5e00,value,,UCH,,,
+r,,,DSN,device specific number,,,b509,0d9a00,value,,UIN,,,
+r,,,EbusVoltage,eBUS source feedback,,,b509,0d7f00,value,,UCH,0=off;1=on,,
