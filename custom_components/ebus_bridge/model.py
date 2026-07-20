@@ -139,6 +139,23 @@ def parse_values(data: dict[str, Any]) -> dict[tuple[str, str, str], Any]:
     return values
 
 
+def parse_ages(data: dict[str, Any]) -> dict[tuple[str, str], int]:
+    """`lastup` je Nachricht (Unix-Zeit aus ebusd; nur bei `?verbose` enthalten).
+
+    Damit erkennt die Integration selbst, welche Werte der Bus ohnehin frisch
+    hält (fremde Master, die ebusd passiv mithört) und welche verharzt sind.
+    """
+    ages: dict[tuple[str, str], int] = {}
+    for circuit, msg in _iter_messages(data):
+        if msg.get("write") or _is_ident(msg):
+            continue
+        name = msg.get("name")
+        lastup = msg.get("lastup")
+        if name and isinstance(lastup, int):
+            ages[(circuit, name)] = lastup
+    return ages
+
+
 def _extract_ident(fields: dict) -> dict[str, str]:
     def _val(target: str):
         for fkey, fval in fields.items():

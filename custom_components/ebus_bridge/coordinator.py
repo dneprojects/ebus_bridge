@@ -10,9 +10,15 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .client import EbusdClient, EbusdError
 from .const import DOMAIN
-from .model import FieldDesc, parse_global, parse_values
+from .model import FieldDesc, parse_ages, parse_global, parse_values
 
 _LOGGER = logging.getLogger(__name__)
+
+# Werte, die der Bus binnen dieser Zeit von allein nachliefert (fremde Master,
+# die ebusd passiv mithört), brauchen kein erzwungenes Lesen.
+_SELF_MAINTAINED_S = 90
+# Obergrenze erzwungener Bus-Reads je Zyklus -- ebusd führt sie blockierend aus.
+_MAX_TOPUP_PER_CYCLE = 4
 
 
 class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
@@ -44,6 +50,8 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         self.host = host
         self.global_data: dict[str, Any] = {}
         self._max_age = scan_interval
+        self._ages: dict[tuple[str, str], int] = {}
+        self._cursor = 0
         self._fast = self._collect_fast(fields, fast or [])
         if self._fast:
             _LOGGER.info(
@@ -79,21 +87,57 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         name = desc.message.lower()
         return not any(pattern in name for pattern in self._exclude)
 
-    async def _refresh_fast(self) -> None:
-        """Zeitkritische Nachrichten vor dem Sammel-Abruf frisch vom Bus holen."""
-        for circuit, message in self._fast:
+    async def _refresh(self, targets: list[tuple[str, str]]) -> None:
+        """Nachrichten direkt vom Bus nachholen (ebusd liest dabei blockierend)."""
+        for circuit, message in targets:
             try:
                 await self.client.refresh(circuit, message, self._max_age)
             except EbusdError as err:  # einzelne Nachricht nicht lesbar -> weiter
                 _LOGGER.debug("Direktes Lesen von %s/%s: %s", circuit, message, err)
 
+    def _stale(self) -> list[tuple[str, str]]:
+        """Nachrichten, die der Bus nicht von allein frisch hält, älteste zuerst.
+
+        Bezugspunkt ist ebusds eigene Uhr (jüngster Zeitstempel der Antwort),
+        damit eine Zeitabweichung zwischen HA und ebusd nichts verfälscht.
+        """
+        if not self._ages:
+            return []
+        now = max(self._ages.values())
+        limit = max(3 * self._max_age, _SELF_MAINTAINED_S)
+        stale = [
+            (key, lastup)
+            for key, lastup in self._ages.items()
+            if now - lastup > limit and self.included_key(key)
+        ]
+        stale.sort(key=lambda item: item[1])  # älteste zuerst
+        return [key for key, _ in stale]
+
+    def included_key(self, key: tuple[str, str]) -> bool:
+        """Wie `included`, aber auf (Kreis, Nachricht) statt auf ein Feld."""
+        name = key[1].lower()
+        return not any(pattern in name for pattern in self._exclude)
+
     async def _async_update_data(self) -> dict[tuple[str, str, str], Any]:
-        await self._refresh_fast()
+        # Erzwungen lesen: erst die vom Nutzer benannten, dann die verharzten
+        # reihum -- begrenzt, damit der Bus nicht geflutet wird.
+        targets = list(self._fast)
+        stale = self._stale()
+        if stale:
+            take = _MAX_TOPUP_PER_CYCLE
+            self._cursor %= len(stale)
+            targets += stale[self._cursor : self._cursor + take]
+            self._cursor += take
+            _LOGGER.debug("%d Nachrichten verharzt, hole %d nach", len(stale), take)
+        if targets:
+            await self._refresh(targets)
+
         try:
             data = await self.client.get_data()
         except EbusdError as err:
             raise UpdateFailed(f"ebusd: {err}") from err
         self.global_data = parse_global(data)
+        self._ages = parse_ages(data)
         values = parse_values(data)
         _LOGGER.debug("ebusd: %d Felder mit Wert", len(values))
         return values

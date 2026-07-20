@@ -48,16 +48,12 @@ class EbusdClient:
         return parse_values(await self._get(""))
 
     async def get_data(self) -> dict[str, Any]:
-        """Rohes /data (Werte + globaler Abschnitt)."""
-        return await self._get("")
+        """Rohes /data (Werte + globaler Abschnitt).
 
-    async def set_poll(self, circuit: str, message: str, priority: int) -> None:
-        """Poll-Priorität einer Nachricht in ebusd setzen.
-
-        Damit hält ebusd die Werte selbst frisch – ohne MQTT. ebusd pollt eine
-        Nachricht je `pollinterval`, die Buslast bleibt also konstant.
+        `verbose` liefert zusätzlich `lastup` je Nachricht -> Grundlage dafür,
+        selbst zu erkennen, welche Werte der Bus ohnehin frisch hält.
         """
-        await self._get(f"/{circuit}/{message}?exact=1&poll={priority}")
+        return await self._get("?verbose")
 
     async def refresh(self, circuit: str, message: str, max_age: int) -> None:
         """Nachricht direkt vom Bus lesen, falls der Cache älter als `max_age` ist.

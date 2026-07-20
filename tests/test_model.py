@@ -144,3 +144,34 @@ def test_value_is_on():
     assert model.value_is_on("on") is True
     assert model.value_is_on("off") is False
     assert model.value_is_on(None) is None
+
+
+def test_parse_ages_reads_lastup_per_message():
+    """`?verbose` liefert `lastup` je Nachricht -- Grundlage der Frische-Erkennung."""
+    data = {
+        "ctlv3": {
+            "messages": {
+                "Z1RoomTemp": {
+                    "name": "Z1RoomTemp",
+                    "lastup": 1700000100,
+                    "fields": {"0": {"name": "temp", "value": 22.0}},
+                },
+                "HwcTempDesired": {
+                    "name": "HwcTempDesired",
+                    "lastup": 1700000000,
+                    "fields": {"0": {"name": "temp", "value": 50}},
+                },
+            }
+        }
+    }
+    ages = model.parse_ages(data)
+    assert ages == {
+        ("ctlv3", "Z1RoomTemp"): 1700000100,
+        ("ctlv3", "HwcTempDesired"): 1700000000,
+    }
+
+
+def test_parse_ages_skips_messages_without_lastup():
+    """Ohne `verbose` fehlt `lastup` -- dann darf nichts gemeldet werden."""
+    data = {"c": {"messages": {"M": {"name": "M", "fields": {}}}}}
+    assert model.parse_ages(data) == {}

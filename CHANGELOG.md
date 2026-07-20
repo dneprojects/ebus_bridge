@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.0
+- Values the bus refreshes on its own are left untouched; only genuinely stale messages are topped up, a few per cycle.
+- Removed the `poll_priority` option: registering hundreds of ebusd polls slowed every value down instead of speeding it up.
+
 ## 1.4.0
 - New option `fast`: selected messages are read straight from the bus each cycle, so they stay as fresh as the poll interval.
 

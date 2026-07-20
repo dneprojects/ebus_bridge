@@ -15,18 +15,15 @@ from .const import (
     CONF_FAST,
     CONF_HOST,
     CONF_HTTP_PORT,
-    CONF_POLL_PRIORITY,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
     DEFAULT_EXCLUDE,
     DEFAULT_FAST,
     DEFAULT_HTTP_PORT,
-    DEFAULT_POLL_PRIORITY,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
 )
 from .coordinator import EbusdCoordinator
-from .model import FieldDesc
 from .services import async_setup_services, async_unload_services
 
 _LOGGER = logging.getLogger(__name__)
@@ -63,10 +60,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if p.strip()
     ]
 
-    priority = entry.options.get(CONF_POLL_PRIORITY, DEFAULT_POLL_PRIORITY)
-    if priority:
-        await _register_polls(client, fields, exclude, priority)
-
     host = entry.data[CONF_HOST]
     coordinator = EbusdCoordinator(
         hass, client, fields, device_meta, scan_interval, exclude,
@@ -91,36 +84,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await async_setup_services(hass)
     entry.async_on_unload(entry.add_update_listener(_async_reload))
     return True
-
-
-async def _register_polls(
-    client: EbusdClient,
-    fields: list[FieldDesc],
-    exclude: list[str],
-    priority: int,
-) -> None:
-    """ebusd anweisen, die gezeigten Nachrichten selbst zyklisch zu lesen.
-
-    Ersetzt das früher von MQTT getriebene Polling. Ohne das bleiben die Werte
-    im ebusd-Cache stehen und die Entitäten werden „nicht verfügbar".
-    """
-    seen: set[tuple[str, str]] = set()
-    for desc in fields:
-        key = (desc.circuit, desc.message)
-        if key in seen or any(p in desc.message.lower() for p in exclude):
-            continue
-        seen.add(key)
-
-    ok = 0
-    for circuit, message in sorted(seen):
-        try:
-            await client.set_poll(circuit, message, priority)
-            ok += 1
-        except EbusdError as err:  # einzelne Nachricht nicht pollbar -> egal
-            _LOGGER.debug("Poll für %s/%s abgelehnt: %s", circuit, message, err)
-    _LOGGER.info(
-        "Poll-Priorität %d für %d von %d Nachrichten gesetzt", priority, ok, len(seen)
-    )
 
 
 async def _async_reload(hass: HomeAssistant, entry: ConfigEntry) -> None:
