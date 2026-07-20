@@ -14,10 +14,12 @@ from .const import (
     CONF_EXCLUDE,
     CONF_HOST,
     CONF_HTTP_PORT,
+    CONF_POLL_PRIORITY,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
     DEFAULT_EXCLUDE,
     DEFAULT_HTTP_PORT,
+    DEFAULT_POLL_PRIORITY,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
@@ -95,6 +97,10 @@ class EbusdOptionsFlow(config_entries.OptionsFlow):
                     CONF_EXCLUDE,
                     default=opts.get(CONF_EXCLUDE, DEFAULT_EXCLUDE),
                 ): str,
+                vol.Optional(
+                    CONF_POLL_PRIORITY,
+                    default=opts.get(CONF_POLL_PRIORITY, DEFAULT_POLL_PRIORITY),
+                ): vol.All(int, vol.Range(min=0, max=9)),
             }
         )
         return self.async_show_form(step_id="init", data_schema=schema)

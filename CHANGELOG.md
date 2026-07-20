@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.0
+- Integration registers ebusd poll priorities itself, so values stay fresh without MQTT (option `poll_priority`, 0 = off).
+
 ## 1.2.1
 - Sensor display precision derived from the data type (integer registers show without decimals).
 

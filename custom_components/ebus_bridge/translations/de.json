@@ -24,7 +24,8 @@
         "title": "eBUS Bridge – Optionen",
         "data": {
           "scan_interval": "Poll-Intervall (Sekunden)",
-          "exclude": "Nachrichtennamen ausschließen (Teilstrings, kommagetrennt, z. B. Timer)"
+          "exclude": "Nachrichtennamen ausschließen (Teilstrings, kommagetrennt, z. B. Timer)",
+          "poll_priority": "ebusd-Poll-Priorität (0 = aus, 1 = häufigste)"
         }
       }
     }

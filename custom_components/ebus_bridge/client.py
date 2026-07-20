@@ -51,6 +51,14 @@ class EbusdClient:
         """Rohes /data (Werte + globaler Abschnitt)."""
         return await self._get("")
 
+    async def set_poll(self, circuit: str, message: str, priority: int) -> None:
+        """Poll-Priorität einer Nachricht in ebusd setzen.
+
+        Damit hält ebusd die Werte selbst frisch – ohne MQTT. ebusd pollt eine
+        Nachricht je `pollinterval`, die Buslast bleibt also konstant.
+        """
+        await self._get(f"/{circuit}/{message}?exact=1&poll={priority}")
+
     # ---- TCP (Schreiben + Verbindungstest) ---------------------------------
     async def _command(self, cmd: str) -> list[str]:
         try:
