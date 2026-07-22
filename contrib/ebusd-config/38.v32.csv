@@ -23,11 +23,17 @@ r1,,,FlowTempDemand,d.09 flow setpoint demanded,,,b509,0d3900,value,,D2C,,°C,te
 r,,,WaterPressure,water pressure,,,b509,0d0200,value,,FLT,,bar,pressure,ign,,IGN:1,,,
 r,,,Templimiter,temperature limiter,,,b509,0d7700,value,,UCH,240=off;15=on,,
 r,,,Currenterror,current errors,,,b503,0001,error,,UIN,,,error number,error_1,,UIN,,,error number,error_2,,UIN,,,error number,error_3,,UIN,,,error number,error_4,,UIN,,,error number
-# --- Zaehlerstaende ----------------------------------------------------------
-r,,,HcHours,d.80 heating operation hours,,,b509,0d2800,value,,UIN,,h,hours
-r,,,HcStarts,d.82 heating starts,,,b509,0d2900,value,,UIN,-100,,cycles
-r,,,HwcHours,d.81 DHW operation hours,,,b509,0d2200,value,,UIN,,h,hours
-r,,,HwcStarts,d.83 DHW starts,,,b509,0d2300,value,,UIN,-100,,cycles
+# --- Betriebszaehler: DEAKTIVIERT ---------------------------------------------
+# Diese d.80..d.83-Register stammen aus der Community-Liste fuer eloBLOCK VE 9/14
+# und sind auf diesem VE24 NICHT verifiziert. HwcStarts blieb 0, obwohl der
+# eloBlock nachweislich Warmwasser gemacht hat (14,45 kW / Statenumber 24) ->
+# das Register traegt hier nicht die WW-Starts. Auskommentiert, bis die richtigen
+# Register per Register-Scan (Vorher/Nachher-Diff) gefunden sind; eine dauerhafte
+# 0 ist irrefuehrender als keine Entitaet.
+#r,,,HcHours,d.80 heating operation hours,,,b509,0d2800,value,,UIN,,h,hours
+#r,,,HcStarts,d.82 heating starts,,,b509,0d2900,value,,UIN,-100,,cycles
+#r,,,HwcHours,d.81 DHW operation hours,,,b509,0d2200,value,,UIN,,h,hours
+#r,,,HwcStarts,d.83 DHW starts,,,b509,0d2300,value,,UIN,-100,,cycles
 r,,,TemplimiterCutoffs,d.60 safety limiter cut offs,,,b509,0d2000,value,,UCH,,,
 # --- Einstellungen / Typschild (praktisch konstant) --------------------------
 r,,,PartloadHcKW,d.00 heating partload,,,b509,0d6c00,value,,UCH,,kW,heating part load
