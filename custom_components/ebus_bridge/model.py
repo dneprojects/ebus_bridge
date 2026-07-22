@@ -40,6 +40,7 @@ class FieldDesc(NamedTuple):
     max_value: float | None
     step: float | None
     writable: bool
+    passive: bool = False  # aus einer passiv mitgehörten Kommando-Nachricht
 
     @property
     def key(self) -> tuple[str, str, str]:
@@ -86,11 +87,26 @@ def _iter_messages(data: dict[str, Any]):
                 yield circuit, msg
 
 
+def _real_fields(msg: dict) -> list[dict]:
+    return [
+        fd for fd in msg.get("fielddefs", [])
+        if fd.get("name") and _basetype(fd.get("type")) != "IGN" and "value" not in fd
+    ]
+
+
 def parse_definitions(data: dict[str, Any]) -> list[FieldDesc]:
+    # Schreibbar ist nur, wer als Write-Nachricht GENAU EIN Feld hat. Mehrfeld-
+    # Kommandos (z. B. SetMode) lassen sich nicht feldweise schreiben -> read-only.
     writable: set[tuple[str, str]] = set()
+    passive_msgs: set[tuple[str, str]] = set()
     for circuit, msg in _iter_messages(data):
-        if not _is_ident(msg) and msg.get("write"):
-            writable.add((circuit, msg.get("name")))
+        if _is_ident(msg):
+            continue
+        name = msg.get("name")
+        if msg.get("passive"):
+            passive_msgs.add((circuit, name))
+        if msg.get("write") and len(_real_fields(msg)) <= 1:
+            writable.add((circuit, name))
 
     seen: set[tuple[str, str, str]] = set()
     out: list[FieldDesc] = []
@@ -98,11 +114,9 @@ def parse_definitions(data: dict[str, Any]) -> list[FieldDesc]:
         if _is_ident(msg):
             continue
         name = msg.get("name")
-        real = [
-            fd for fd in msg.get("fielddefs", [])
-            if fd.get("name") and _basetype(fd.get("type")) != "IGN" and "value" not in fd
-        ]
+        real = _real_fields(msg)
         multi = len(real) > 1
+        is_passive = (circuit, name) in passive_msgs
         for fd in real:
             fname = fd["name"]
             key = (circuit, name, fname)
@@ -122,6 +136,7 @@ def parse_definitions(data: dict[str, Any]) -> list[FieldDesc]:
                 numeric=values is None and btype in _TYPE_BOUNDS,
                 min_value=lo, max_value=hi, step=step,
                 writable=(circuit, name) in writable,
+                passive=is_passive,
             ))
     return out
 
@@ -129,7 +144,11 @@ def parse_definitions(data: dict[str, Any]) -> list[FieldDesc]:
 def parse_values(data: dict[str, Any]) -> dict[tuple[str, str, str], Any]:
     values: dict[tuple[str, str, str], Any] = {}
     for circuit, msg in _iter_messages(data):
-        if msg.get("write") or _is_ident(msg):
+        if _is_ident(msg):
+            continue
+        # Reine Write-Nachrichten haben keinen Wert; passiv mitgehörte Kommandos
+        # (u/uw, z. B. SetMode) dagegen schon -> die wollen wir sehen.
+        if msg.get("write") and not msg.get("passive"):
             continue
         name = msg.get("name")
         for fkey, fval in (msg.get("fields") or {}).items():

@@ -27,6 +27,10 @@ _SELF_MAINTAINED_S = 600
 _TOPUP_MAX = 20
 _TOPUP_MIN = 8
 _TOPUP_PER_BACKLOG = 20  # je so viele offene Nachrichten ein Read mehr
+# So oft die Definitionen neu abgeglichen werden. Neu in ebusd geladene
+# Nachrichten (nach Config-Änderung) werden dann von allein aufgenommen --
+# ohne Integrations-Reload.
+_DEF_REFRESH_S = 600
 
 
 class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
@@ -61,6 +65,7 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         self._ages: dict[tuple[str, str], int] = {}
         self._cursor = 0
         self._warned_ages = False
+        self._last_def_refresh: float | None = None
         self._fast = self._collect_fast(fields, fast or [])
         if self._fast:
             _LOGGER.info(
@@ -137,7 +142,34 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         name = key[1].lower()
         return not any(pattern in name for pattern in self._exclude)
 
+    async def _maybe_refresh_definitions(self) -> None:
+        """Neue ebusd-Nachrichten von allein aufnehmen (kein Reload nötig).
+
+        ebusd kann nach einer Config-Änderung neue Nachrichten kennen, die es
+        beim Setup noch nicht gab. Nur ergänzen, nie entfernen; geänderte
+        Definitionen (z. B. neue Werte-Tabelle) brauchen weiter einen Reload.
+        """
+        loop = asyncio.get_running_loop()
+        if self._last_def_refresh is None:  # Setup hat gerade frisch geholt
+            self._last_def_refresh = loop.time()
+            return
+        if loop.time() - self._last_def_refresh < _DEF_REFRESH_S:
+            return
+        self._last_def_refresh = loop.time()
+        try:
+            fields, device_meta = await self.client.get_definitions()
+        except EbusdError as err:
+            _LOGGER.debug("Definitions-Abgleich fehlgeschlagen: %s", err)
+            return
+        known = {d.key for d in self.fields}
+        new = [d for d in fields if d.key not in known]
+        if new:
+            self.fields = self.fields + new
+            self.device_meta = device_meta
+            _LOGGER.info("%d neue ebusd-Nachricht(en) übernommen", len(new))
+
     async def _async_update_data(self) -> dict[tuple[str, str, str], Any]:
+        await self._maybe_refresh_definitions()
         # Erzwungen lesen: erst die vom Nutzer benannten, dann die verharzten
         # reihum -- begrenzt, damit der Bus nicht geflutet wird.
         targets = list(self._fast)

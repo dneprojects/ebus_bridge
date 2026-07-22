@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.0
+- New ebusd messages are picked up automatically (periodic definition sync), so an integration reload is no longer needed after editing ebusd config.
+- Passively observed command fields (e.g. the regulator's SetMode releasebackup) are exposed as read-only diagnostic sensors, disabled by default.
+
 ## 1.5.4
 - Rarely-changing config/counter values are topped up only every ~10 min instead of every 90 s, so the top-up converges instead of churning the bus.
 

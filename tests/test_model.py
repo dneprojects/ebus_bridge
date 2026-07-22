@@ -175,3 +175,47 @@ def test_parse_ages_skips_messages_without_lastup():
     """Ohne `verbose` fehlt `lastup` -- dann darf nichts gemeldet werden."""
     data = {"c": {"messages": {"M": {"name": "M", "fields": {}}}}}
     assert model.parse_ages(data) == {}
+
+
+def test_parse_definitions_passive_multifield_readonly():
+    """SetMode (passiv, mehrfeldrig) -> Felder read-only + passive-Flag."""
+    data = {"wp0": {"messages": {"SetMode": {
+        "name": "SetMode", "passive": True, "write": True,
+        "fielddefs": [
+            {"name": "hcmode", "type": "UCH", "values": {"0": "auto"}},
+            {"name": "releasebackup", "type": "UCH", "values": {"0": "off", "1": "on"}},
+        ],
+    }}}}
+    descs = {d.field: d for d in model.parse_definitions(data)}
+    assert set(descs) == {"hcmode", "releasebackup"}
+    assert all(d.passive and not d.writable for d in descs.values())
+
+
+def test_parse_definitions_single_field_write_is_writable():
+    """Einzelfeld-Write bleibt schreibbar; nicht passiv."""
+    data = {"c": {"messages": {
+        "Temp": {"name": "Temp", "write": False,
+                 "fielddefs": [{"name": "value", "type": "EXP", "unit": "°C"}]},
+        "Temp-w": {"name": "Temp", "write": True,
+                   "fielddefs": [{"name": "value", "type": "EXP", "unit": "°C"}]},
+    }}}
+    d = model.parse_definitions(data)[0]
+    assert d.writable is True and d.passive is False
+
+
+def test_parse_values_includes_passive_command():
+    """releasebackup aus der passiv mitgehörten SetMode wird sichtbar."""
+    data = {"wp0": {"messages": {"SetMode": {
+        "name": "SetMode", "passive": True, "write": True,
+        "fields": {"releasebackup": {"name": "releasebackup", "value": 1}},
+    }}}}
+    assert model.parse_values(data)[("wp0", "SetMode", "releasebackup")] == 1
+
+
+def test_parse_values_skips_pure_write():
+    """Reine Write-Nachricht (nicht passiv) liefert keinen Wert."""
+    data = {"c": {"messages": {"Cmd": {
+        "name": "Cmd", "write": True,
+        "fields": {"value": {"name": "value", "value": 5}},
+    }}}}
+    assert model.parse_values(data) == {}

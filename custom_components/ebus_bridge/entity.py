@@ -6,6 +6,7 @@ from typing import Any
 
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -147,6 +148,12 @@ class EbusdBaseEntity(CoordinatorEntity[EbusdCoordinator]):
         self._attr_name = desc.label
         self._attr_icon = _icon_for(desc)
         self._attr_device_info = build_device_info(coordinator, desc.circuit)
+        # Passiv mitgehörte Kommando-Felder (z. B. SetMode) sind Diagnose und
+        # standardmäßig aus -- sonst fluten sie die Geräte. Der Nutzer aktiviert
+        # gezielt, was er braucht (etwa releasebackup).
+        if desc.passive and not desc.writable:
+            self._attr_entity_category = EntityCategory.DIAGNOSTIC
+            self._attr_entity_registry_enabled_default = False
 
     @property
     def _value(self) -> Any:
