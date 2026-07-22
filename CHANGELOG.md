@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.4
+- Rarely-changing config/counter values are topped up only every ~10 min instead of every 90 s, so the top-up converges instead of churning the bus.
+
 ## 1.5.3
 - Fix: stale values were never topped up because message timestamps need `full`, not `verbose`.
 

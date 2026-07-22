@@ -15,9 +15,13 @@ from .model import FieldDesc, parse_ages, parse_global, parse_values
 
 _LOGGER = logging.getLogger(__name__)
 
-# Werte, die der Bus binnen dieser Zeit von allein nachliefert (fremde Master,
-# die ebusd passiv mithört), brauchen kein erzwungenes Lesen.
-_SELF_MAINTAINED_S = 90
+# Ab diesem Alter wird eine Nachricht erzwungen nachgelesen. Bewusst großzügig:
+# per Top-up geholt werden nur Werte, die KEIN Master abfragt -- Konfig/Zähler,
+# die sich kaum ändern. Sie auf wenige Sekunden frisch halten zu wollen erzeugt
+# nur Dauer-Rauschen am Bus und holt bei vielen hundert Nachrichten nie auf.
+# Live-Werte laufen über `fast` bzw. den nativen Verkehr und bleiben ohnehin
+# jünger als diese Schwelle, werden also nie per Top-up angefasst.
+_SELF_MAINTAINED_S = 600
 # Erzwungene Bus-Reads je Zyklus: viele, solange ein Rückstand aufzuholen ist,
 # danach nur noch die Grundlast. ebusd führt sie blockierend aus, deshalb gedeckelt.
 _TOPUP_MAX = 20
