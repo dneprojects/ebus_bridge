@@ -13,11 +13,11 @@ type,circuit,level,name,comment,qq,zz,pbsb,id,*name,part,type,divisor/values,uni
 # --- Live-Werte (rotieren in ebusd) -----------------------------------------
 r1,,,FlowTemp,flow temperature,,,b509,0d1800,value,,D2C,,°C,temperature,ign,,IGN:1,,,
 r1,,,PumpState,pump status,,,b511,01,ign,,IGN:6,,,,value,,UCH,0=off;1=on;2=overrun;4=hwc,,pump status
-r1,,,Statenumber,status number,,,b509,0dab00,value,,UCH,,,
-# Gleiches Register, zusaetzlich als Klartext (Vaillant-Statuscodes S.xx). 24 =
-# Warmwasserbetrieb ist an diesem Geraet feldverifiziert (14,45 kW + Vorlauf 57 °C
-# gleichzeitig mit Statenumber 31->24). Unbekannte Codes zeigt ebusd als Zahl.
-r1,,,StatenumberText,status number decoded,,,b509,0dab00,value,,UCH,0=kein_bedarf;4=heizen;7=pumpennachlauf;24=warmwasser;31=sommer;34=frostschutz,,
+# Statuscode als Klartext (Vaillant S.xx). Werte direkt an Statenumber, KEINE
+# zweite Nachricht aufs selbe Register 0dab00 (ebusd lehnt Duplikate ab). 24 =
+# Warmwasserbetrieb ist feldverifiziert (14,45 kW + Vorlauf 57 °C gleichzeitig
+# mit Statenumber 31->24). Unbekannte Codes zeigt ebusd als Zahl.
+r1,,,Statenumber,status number,,,b509,0dab00,value,,UCH,0=kein_bedarf;4=heizen;7=pumpennachlauf;24=warmwasser;31=sommer;34=frostschutz,,
 r1,,,FlowTempDemand,d.09 flow setpoint demanded,,,b509,0d3900,value,,D2C,,°C,temperature
 # --- Langsam veraenderlich ---------------------------------------------------
 r,,,WaterPressure,water pressure,,,b509,0d0200,value,,FLT,,bar,pressure,ign,,IGN:1,,,
