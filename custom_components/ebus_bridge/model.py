@@ -126,6 +126,17 @@ def parse_definitions(data: dict[str, Any]) -> list[FieldDesc]:
             btype = _basetype(fd.get("type"))
             values = fd.get("values") or None
             lo, hi, step = _TYPE_BOUNDS.get(btype, (None, None, None))
+            # Divisor in die Schrittweite falten: ein UIN/SCH mit Divisor 10 hat
+            # real 0,1er-Auflösung (z. B. COP, aktuelle Leistung, Tageserträge) und
+            # soll 1 Nachkommastelle zeigen. Nur bei Ganzzahl-Typen (Schritt >= 1);
+            # Festkomma/Float bringen ihre Auflösung schon im Basis-Schritt mit,
+            # und ein reiner Umrechnungs-Divisor (W->kW) soll dort keine Stellen
+            # erzwingen. Faktoren (Divisor < 0) machen gröber -> keine Stellen.
+            divisor = fd.get("divisor")
+            if step and step >= 1 and isinstance(divisor, (int, float)) and divisor > 1:
+                lo = lo / divisor if lo is not None else None
+                hi = hi / divisor if hi is not None else None
+                step = step / divisor
             if fd.get("unit") == "°C":
                 # realistische Heizungs-Spanne; erlaubt Außen-/Sollwerte < 0 °C
                 lo, hi, step = -60, 150, 0.5

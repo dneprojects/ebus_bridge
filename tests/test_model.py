@@ -219,3 +219,35 @@ def test_parse_values_skips_pure_write():
         "fields": {"value": {"name": "value", "value": 5}},
     }}}}
     assert model.parse_values(data) == {}
+
+
+def _one(data):
+    return model.parse_definitions(data)[0]
+
+
+def test_divisor_folds_into_step_for_integer_types():
+    """UIN/SCH mit Divisor 10 -> Schritt 0.1 (COP, aktuelle Leistung)."""
+    for btype in ("UIN", "SCH"):
+        d = _one({"c": {"messages": {"CopHc": {
+            "name": "CopHc",
+            "fielddefs": [{"name": "value", "type": btype, "divisor": 10}],
+        }}}})
+        assert d.step == 0.1, btype
+
+
+def test_no_divisor_keeps_integer_step():
+    """UCH ohne Divisor (eloBlock PartLoad) bleibt Schritt 1 -> 0 Stellen."""
+    d = _one({"c": {"messages": {"PartloadHcKW": {
+        "name": "PartloadHcKW", "unit": "kW",
+        "fielddefs": [{"name": "value", "type": "UCH", "unit": "kW"}],
+    }}}})
+    assert d.step == 1
+
+
+def test_factor_negative_divisor_stays_coarse():
+    """Faktor (Divisor < 0) verfeinert nicht -> Schritt bleibt 1."""
+    d = _one({"c": {"messages": {"HwcStarts": {
+        "name": "HwcStarts",
+        "fielddefs": [{"name": "value", "type": "UIN", "divisor": -100}],
+    }}}})
+    assert d.step == 1

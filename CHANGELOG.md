@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.6.1
+- Display precision now follows the value divisor, so scaled integers (COP, current power, daily yields) show one decimal instead of being rounded to whole numbers.
+
 ## 1.6.0
 - New ebusd messages are picked up automatically (periodic definition sync), so an integration reload is no longer needed after editing ebusd config.
 - Passively observed command fields (e.g. the regulator's SetMode releasebackup) are exposed as read-only diagnostic sensors, disabled by default.
