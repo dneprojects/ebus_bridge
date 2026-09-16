@@ -39,10 +39,15 @@ r,,,HwcSwitch,DHW on/off,,,b509,0df303,value,,UCH,0=off;1=on,,
 # D.155 aktuelle Leistung als 9-Bit-Relais-Bitmaske: popcount(Wert) x 2 = kW.
 # ebusd kann kein popcount -> Rohwert hier, kW per HA-Template.
 r1,,,RelayBitmask,d.155 active relay bitmask,,,b509,0d4003,value,,UIN,,,popcount x 2 = current kW
-# Leistungsbegrenzer (laut #1 schreibbar; hier NUR lesend -- Schreiben erst nach
-# Test wegen Regler am geteilten Bus).
+# Leistungsbegrenzer, jetzt schreibbar (Write haelt am Koppler-Bus, mit
+# PartloadHwc verifiziert). Setter brauchen EIGENE Namen (sonst still verworfen).
+# ACHTUNG Divisor d.153 (UIN/100) ist unverifiziert -> vor echtem Einsatz per Hex
+# kalibrieren: 0e3803 mit bekanntem Wert schreiben, 0d3803 zurueckLesen. Sicherer
+# Ruhezustand = Phase 0 (nolimit) + Wert 0. Der Limiter DECKELT nur, startet nicht.
 r,,,PowerLimiterPhase,d.152 power limiter phase,,,b509,0d3703,value,,UCH,0=nolimit;1=phase1;2=phase2;3=phase3;4=allphases,,
+w,elo,install,PowerLimiterPhaseSet,d.152 set power limiter phase,,,b509,0e3703,value,,UCH,0=nolimit;1=phase1;2=phase2;3=phase3;4=allphases,,
 r,,,PowerLimiterValue,d.153 power limiter reduction,,,b509,0d3803,value,,UIN,100,kW,subtracted from max power
+w,elo,install,PowerLimiterValueSet,d.153 set power limiter reduction,,,b509,0e3803,value,,UIN,100,kW,subtracted from max power
 # --- Langsam veraenderlich ---------------------------------------------------
 r,,,WaterPressure,water pressure,,,b509,0d0200,value,,FLT,,bar,pressure,ign,,IGN:1,,,
 r,,,Templimiter,temperature limiter,,,b509,0d7700,value,,UCH,240=off;15=on,,
