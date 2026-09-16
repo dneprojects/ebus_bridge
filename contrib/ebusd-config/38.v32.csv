@@ -4,33 +4,45 @@ type,circuit,level,name,comment,qq,zz,pbsb,id,*name,part,type,divisor/values,uni
 # aber an das Geraet dahinter durch -- daher die BAI-Register ueber b509.
 #
 # Poll-Prioritaeten bewusst sparsam: ebusd liest EINE Nachricht je pollinterval
-# und rotiert ueber alle mit Prioritaet. Jeder ueberfluessige Eintrag verlangsamt
-# also die Werte, auf die es ankommt. r1 bekommt nur, was sich im Betrieb aendert
-# UND was kein anderer Busteilnehmer von sich aus abfragt -- den eloBlock hinter
-# dem Koppler fragt niemand ab. Alles andere (Einstellungen, Zaehlerstaende,
-# Typschild) traegt kein r<n> und wird bei Bedarf gelesen.
+# und rotiert ueber alle mit Prioritaet. r1 bekommt nur, was sich im Betrieb
+# aendert UND was kein anderer Busteilnehmer abfragt. Alles andere traegt kein
+# r<n> und wird bei Bedarf (Top-up der Integration) gelesen.
 *r,elo
+*w,elo
 # --- Live-Werte (rotieren in ebusd) -----------------------------------------
-r1,,,FlowTemp,flow temperature,,,b509,0d1800,value,,D2C,,°C,temperature,ign,,IGN:1,,,
+r1,,,FlowTemp,d.40 flow temperature,,,b509,0d1800,value,,D2C,,°C,temperature,ign,,IGN:1,,,
 r1,,,PumpState,pump status,,,b511,01,ign,,IGN:6,,,,value,,UCH,0=off;1=on;2=overrun;4=hwc,,pump status
 # Statuscode als Klartext (Vaillant S.xx). Werte direkt an Statenumber, KEINE
 # zweite Nachricht aufs selbe Register 0dab00 (ebusd lehnt Duplikate ab). 24 =
 # Warmwasserbetrieb ist feldverifiziert (14,45 kW + Vorlauf 57 °C gleichzeitig
 # mit Statenumber 31->24). Unbekannte Codes zeigt ebusd als Zahl.
 r1,,,Statenumber,status number,,,b509,0dab00,value,,UCH,0=kein_bedarf;4=heizen;7=pumpennachlauf;24=warmwasser;31=sommer;34=frostschutz,,
-r1,,,FlowTempDemand,d.09 flow setpoint demanded,,,b509,0d3900,value,,D2C,,°C,temperature
+# d.05 (nicht d.09) laut Akeebaby #254; Name beibehalten, um die HA-Entitaet nicht zu brechen.
+r1,,,FlowTempDemand,d.05 flow setpoint,,,b509,0d3900,value,,D2C,,°C,temperature
+# --- Betriebsanzeigen (aus Akeebabys #254-Karte, gegen unseren Scan validiert) -
+# Standardmaessig r (kein Poll): der eloBlock laeuft selten, das Top-up reicht.
+# Bei Bedarf einzelne auf r1 setzen, um einen Lauf live zu verfolgen.
+r,,,HeatingDemand,d.23 heating demand,,,b509,0d4000,value,,UCH,0=no;1=yes,,
+r,,,HwcDemand,d.22 DHW demand,,,b509,0d5800,value,,UCH,0=no;1=yes,,
+r,,,PositionValveSet,d.35 diverter valve,,,b509,0d5400,value,,UCH,0=heating;40=middle;100=dhw,,
+r,,,ReturnTemp,d.41 return temperature,,,b509,0d9800,value,,D2C,,°C,temperature,ign,,IGN:2,,,,sensor,,UCH,0=ok;85=circuit;170=cutoff,,sensor status
+r,,,ModulationDesired,modulation setpoint,,,b509,0d2e00,value,,SIN,10,%,modulation set point
+r,,,WP,d.10 internal pump,,,b509,0d4400,value,,UCH,0=off;1=on,,
+r,,,PumpPower,d.15 current pump power,,,b509,0d7300,value,,UCH,,,
+r,,,Storageloadpump,d.12 storage load pump,,,b509,0d9e00,value,,UCH,,%,
+# Regler-Freigaben (Sub 03), NUR lesend -- zeigen, ob der sensoCOMFORT den
+# eloBlock freigibt. Schreiben waere die PV-Ueberschuss-Steuerung, birgt aber
+# Konflikt mit dem Regler am geteilten Bus -> vorerst nicht schreibbar.
+r,,,HeatingSwitch,d.23 wintermode active,,,b509,0df203,value,,UCH,0=off;1=on,,
+r,,,HwcSwitch,DHW on/off,,,b509,0df303,value,,UCH,0=off;1=on,,
 # --- Langsam veraenderlich ---------------------------------------------------
 r,,,WaterPressure,water pressure,,,b509,0d0200,value,,FLT,,bar,pressure,ign,,IGN:1,,,
 r,,,Templimiter,temperature limiter,,,b509,0d7700,value,,UCH,240=off;15=on,,
 r,,,Currenterror,current errors,,,b503,0001,error,,UIN,,,error number,error_1,,UIN,,,error number,error_2,,UIN,,,error number,error_3,,UIN,,,error number,error_4,,UIN,,,error number
 # --- Betriebszaehler: noch nicht lokalisiert ----------------------------------
 # d.80..d.83 (Brenner-Stunden/Starts) liefern konstant 0 -- auch bei @Akeebaby
-# (#254, dort ebenfalls auskommentiert). Akeebabys eloBlock-Block d.100..d.108
-# (sub=01) am VE24 per Roh-Read geprueft: meist leer/ungueltig (B301=ffffffff),
-# E601=24 = Typenschild-Leistung (idle 0 kW am Shelly, Register bleibt 24).
-# Die ECHTEN Zaehler sind damit nur noch nicht gefunden, NICHT widerlegt --
-# per Register-Scan (0d<reg>00 UND 0d<reg>01, Vorher/Nachher-Diff ueber einen
-# eloBlock-Lauf) suchen. Bis dahin auskommentiert, damit keine 0 erscheint.
+# und @AznKid45 (#254), deren eloBloecke NACHWEISLICH liefen. Sehr wahrscheinlich
+# display-only, nicht ueber eBUS lesbar. Auskommentiert, damit keine 0 erscheint.
 #r,,,HcHours,d.80 heating operation hours,,,b509,0d2800,value,,UIN,,h,hours
 #r,,,HcStarts,d.82 heating starts,,,b509,0d2900,value,,UIN,-100,,cycles
 #r,,,HwcHours,d.81 DHW operation hours,,,b509,0d2200,value,,UIN,,h,hours
@@ -38,15 +50,22 @@ r,,,Currenterror,current errors,,,b503,0001,error,,UIN,,,error number,error_1,,U
 r,,,TemplimiterCutoffs,d.60 safety limiter cut offs,,,b509,0d2000,value,,UCH,,,
 # --- Einstellungen / Typschild (praktisch konstant) --------------------------
 r,,,PartloadHcKW,d.00 heating partload,,,b509,0d6c00,value,,UCH,,kW,heating part load
+# PartloadHwcKW schreibbar (0ea900). ACHTUNG: am geteilten Koppler-Bus kann der
+# sensoCOMFORT den Wert ueberschreiben -- erst mit Schreibtest pruefen, ob er haelt.
 r,,,PartloadHwcKW,d.77 hot water partload,,,b509,0da900,value,,UCH,,kW,storage charging power
-r,,,HwcTemp,d.03 DHW temperature,,,b509,0d0100,value,,D2C,,°C,temperature
-r,,,HwcTempMax,d.20 max tank setpoint,,,b509,0dd900,value,,D2C,,°C,temperature
-r,,,AntiCondensValue,d.85 minimal power,,,b509,0dec00,value,,UCH,,kW,
-r,,,PowerValue,power values (min/max),,,b509,0daa00,value,,HEX:6,,,
-r,,,HcPumpMode,d.18 pump mode,,,b509,0db700,value,,UCH,0=post_run;1=permanent;2=winter;3=eco,,
-r,,,BlockTimeHcMax,d.02 max blocking time,,,b509,0d2100,value,,UCH,,min,minutes
-r,,,EBusHeatcontrol,d.90 digital control recognized,,,b509,0d7400,value,,UCH,0=no;1=yes,,
-r,,,WarmstartEnable,d.66 warmstart,,,b509,0d5b00,value,,UCH,0=off;1=on,,
+w,,install,PartloadHwcKW,d.77 hot water partload,,,b509,0ea900,value,,UCH,,kW,storage charging power
+# HwcTemp entfernt: unser 0d0100 war NICHT die DHW-Temperatur. Echtes d.03 liegt
+# laut Akeebaby bei 0d1600 (bei uns 0 = kein Fuehler); Ist-Speichertemp via ctlv3.
+#r,,,HwcTemp,d.03 DHW temperature,,,b509,0d0100,value,,D2C,,°C,temperature
+# unbestaetigt: Akeebaby verortet d.20 bei 0d4304; unser 0dd900 (=70) ist ungeklaert.
+r,,,HwcTempMax,d.20 max tank setpoint (unverifiziert),,,b509,0dd900,value,,D2C,,°C,temperature
+# --- unverifiziert: nicht in Akeebabys #254-Karte, Werte plausibel, Labels aber
+#     Community-Rateschaetzung (evtl. Gaskessel-Register) ------------------------
+r,,,AntiCondensValue,d.85 minimal power (unverifiziert),,,b509,0dec00,value,,UCH,,kW,
+r,,,HcPumpMode,d.18 pump mode (unverifiziert),,,b509,0db700,value,,UCH,0=post_run;1=permanent;2=winter;3=eco,,
+r,,,BlockTimeHcMax,d.02 max blocking time (unverifiziert),,,b509,0d2100,value,,UCH,,min,minutes
+r,,,EBusHeatcontrol,d.90 digital control recognized (unverifiziert),,,b509,0d7400,value,,UCH,0=no;1=yes,,
+r,,,WarmstartEnable,d.66 warmstart (unverifiziert),,,b509,0d5b00,value,,UCH,0=off;1=on,,
 r,,,CirPump,d.13 circulation pump,,,b509,0d7b00,value,,UCH,0=off;1=on,,
 r,,,BoilerType,boiler type,,,b509,0d5e00,value,,UCH,,,
 r,,,DSN,device specific number,,,b509,0d9a00,value,,UIN,,,
