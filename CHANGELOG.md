@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.6.2
+- Messages whose ebusd response keeps failing to decode are dropped from the read rotation, so a wrong CSV definition no longer wastes a read and logs an error every cycle.
+
 ## 1.6.1
 - Display precision now follows the value divisor, so scaled integers (COP, current power, daily yields) show one decimal instead of being rounded to whole numbers.
 

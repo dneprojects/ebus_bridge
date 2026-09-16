@@ -169,6 +169,23 @@ def parse_values(data: dict[str, Any]) -> dict[tuple[str, str, str], Any]:
     return values
 
 
+def parse_decode_errors(data: dict[str, Any]) -> set[tuple[str, str]]:
+    """(Kreis, Nachricht) aller Nachrichten mit `decodeerror` in der Antwort.
+
+    Antwort empfangen, passt aber nicht zur CSV-Definition. Deterministisch (tritt
+    bei falscher Definition jeden Zyklus auf), daher als Signal fürs Aussortieren
+    geeignet -- anders als ein Timeout, der keinen decodeerror erzeugt.
+    """
+    errs: set[tuple[str, str]] = set()
+    for circuit, msg in _iter_messages(data):
+        if _is_ident(msg):
+            continue
+        name = msg.get("name")
+        if name and msg.get("decodeerror"):
+            errs.add((circuit, name))
+    return errs
+
+
 def parse_ages(data: dict[str, Any]) -> dict[tuple[str, str], int]:
     """`lastup` je Nachricht (Unix-Zeit aus ebusd; nur bei `?verbose` enthalten).
 

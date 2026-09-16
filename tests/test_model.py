@@ -251,3 +251,19 @@ def test_factor_negative_divisor_stays_coarse():
         "fielddefs": [{"name": "value", "type": "UIN", "divisor": -100}],
     }}}})
     assert d.step == 1
+
+
+def test_parse_decode_errors_collects_broken_messages():
+    """Nachrichten mit `decodeerror` werden erkannt, saubere nicht."""
+    data = {"ctlv3": {"messages": {
+        "Z2Shortname": {"name": "Z2Shortname", "decodeerror": "ERR: invalid position"},
+        "HwcTempDesired": {"name": "HwcTempDesired",
+                           "fields": {"value": {"name": "value", "value": 50}}},
+    }}}
+    assert model.parse_decode_errors(data) == {("ctlv3", "Z2Shortname")}
+
+
+def test_parse_decode_errors_skips_ident_and_empty():
+    data = {"scan": {"messages": {"x": {"name": "x", "decodeerror": "e"}}},
+            "c": {"messages": {"ok": {"name": "ok", "fields": {}}}}}
+    assert model.parse_decode_errors(data) == set()

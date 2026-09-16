@@ -11,7 +11,13 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .client import EbusdClient, EbusdError
 from .const import DOMAIN
-from .model import FieldDesc, parse_ages, parse_global, parse_values
+from .model import (
+    FieldDesc,
+    parse_ages,
+    parse_decode_errors,
+    parse_global,
+    parse_values,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,6 +37,13 @@ _TOPUP_PER_BACKLOG = 20  # je so viele offene Nachrichten ein Read mehr
 # Nachrichten (nach Config-Änderung) werden dann von allein aufgenommen --
 # ohne Integrations-Reload.
 _DEF_REFRESH_S = 600
+# Nachrichten, die so oft hintereinander einen Decode-Fehler liefern (Antwort da,
+# passt aber nicht zur CSV-Definition), werden aus der Top-up-Rotation genommen:
+# sie kosten sonst jeden Zyklus einen erfolglosen Read + Log-Fehler. Bewusst auf
+# das Decode-Fehler-Flag gestützt (deterministisch), NICHT auf "kein Wert" -- ein
+# Koppler-Timeout (wp1) liefert keinen Wert, ist aber KEIN Decode-Fehler und darf
+# eine echte Nachricht nicht aussortieren.
+_MAX_DECODE_FAILS = 3
 
 
 class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
@@ -66,6 +79,8 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         self._cursor = 0
         self._warned_ages = False
         self._last_def_refresh: float | None = None
+        self._decode_fails: dict[tuple[str, str], int] = {}
+        self._dead: set[tuple[str, str]] = set()
         self._fast = self._collect_fast(fields, fast or [])
         if self._fast:
             _LOGGER.info(
@@ -132,7 +147,9 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         stale = [
             (key, lastup)
             for key, lastup in self._ages.items()
-            if now - lastup > limit and self.included_key(key)
+            if now - lastup > limit
+            and self.included_key(key)
+            and key not in self._dead
         ]
         stale.sort(key=lambda item: item[1])  # älteste zuerst
         return [key for key, _ in stale]
@@ -168,11 +185,33 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
             self.device_meta = device_meta
             _LOGGER.info("%d neue ebusd-Nachricht(en) übernommen", len(new))
 
+    def _track_decode_errors(self, errs: set[tuple[str, str]]) -> None:
+        """Dauerhaft nicht dekodierbare Nachrichten aus der Rotation nehmen.
+
+        Zählt aufeinanderfolgende Decode-Fehler je Nachricht; nach `_MAX_DECODE_FAILS`
+        wird sie als tot markiert und weder per Top-up noch per `fast` gelesen.
+        Verschwindet der Fehler (z. B. korrigierte CSV nach Reload), wird der Zähler
+        zurückgesetzt und die Nachricht wieder freigegeben.
+        """
+        for key in list(self._decode_fails):
+            if key not in errs:  # dekodiert wieder -> vergessen und wiederbeleben
+                del self._decode_fails[key]
+                self._dead.discard(key)
+        for key in errs:
+            n = self._decode_fails.get(key, 0) + 1
+            self._decode_fails[key] = n
+            if n >= _MAX_DECODE_FAILS and key not in self._dead:
+                self._dead.add(key)
+                _LOGGER.info(
+                    "%s/%s liefert wiederholt undekodierbare Daten -> aus der "
+                    "Lese-Rotation genommen (CSV-Definition prüfen)", *key
+                )
+
     async def _async_update_data(self) -> dict[tuple[str, str, str], Any]:
         await self._maybe_refresh_definitions()
         # Erzwungen lesen: erst die vom Nutzer benannten, dann die verharzten
         # reihum -- begrenzt, damit der Bus nicht geflutet wird.
-        targets = list(self._fast)
+        targets = [key for key in self._fast if key not in self._dead]
         stale = self._stale()
         if stale:
             take = min(_TOPUP_MAX, max(_TOPUP_MIN, len(stale) // _TOPUP_PER_BACKLOG))
@@ -189,6 +228,7 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
             raise UpdateFailed(f"ebusd: {err}") from err
         self.global_data = parse_global(data)
         self._ages = parse_ages(data)
+        self._track_decode_errors(parse_decode_errors(data))
         values = parse_values(data)
         if values and not self._ages and not self._warned_ages:
             # Ohne `lastup` liesse sich nicht erkennen, was der Bus selbst pflegt
