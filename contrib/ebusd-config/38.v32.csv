@@ -57,10 +57,12 @@ r,,,HcHours,d.80 heating operation hours,,,b509,0d3a03,value,,UIN,,h,central hea
 r,,,TemplimiterCutoffs,d.60 safety limiter cut offs,,,b509,0d2000,value,,UCH,,,
 # --- Einstellungen / Typschild (praktisch konstant) --------------------------
 r,,,PartloadHcKW,d.00 heating partload,,,b509,0d6c00,value,,UCH,,kW,heating part load
-# PartloadHwcKW schreibbar (0ea900). ACHTUNG: am geteilten Koppler-Bus kann der
-# sensoCOMFORT den Wert ueberschreiben -- erst mit Schreibtest pruefen, ob er haelt.
+# PartloadHwcKW: Lesen (0da900) + Schreiben (0ea900). WICHTIG: ebusd verwirft in
+# der Scan-Config eine Schreibnachricht STILL, wenn sie Circuit+Name einer schon
+# geladenen Lesenachricht teilt -> daher braucht der Setter einen eigenen Namen.
+# ACHTUNG: am geteilten Koppler-Bus kann der sensoCOMFORT den Wert ueberschreiben.
 r,,,PartloadHwcKW,d.77 hot water partload,,,b509,0da900,value,,UCH,,kW,storage charging power
-w,,install,PartloadHwcKW,d.77 hot water partload,,,b509,0ea900,value,,UCH,,kW,storage charging power
+w,elo,install,PartloadHwcKWSet,d.77 set hot water partload,,,b509,0ea900,value,,UCH,,kW,storage charging power
 # HwcTemp entfernt: unser 0d0100 war NICHT die DHW-Temperatur. Echtes d.03 liegt
 # laut Akeebaby bei 0d1600 (bei uns 0 = kein Fuehler); Ist-Speichertemp via ctlv3.
 #r,,,HwcTemp,d.03 DHW temperature,,,b509,0d0100,value,,D2C,,°C,temperature
