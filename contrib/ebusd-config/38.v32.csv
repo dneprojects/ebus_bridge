@@ -23,13 +23,16 @@ r1,,,FlowTempDemand,d.09 flow setpoint demanded,,,b509,0d3900,value,,D2C,,°C,te
 r,,,WaterPressure,water pressure,,,b509,0d0200,value,,FLT,,bar,pressure,ign,,IGN:1,,,
 r,,,Templimiter,temperature limiter,,,b509,0d7700,value,,UCH,240=off;15=on,,
 r,,,Currenterror,current errors,,,b503,0001,error,,UIN,,,error number,error_1,,UIN,,,error number,error_2,,UIN,,,error number,error_3,,UIN,,,error number,error_4,,UIN,,,error number
-# --- Betriebszaehler: DEAKTIVIERT ---------------------------------------------
-# Diese d.80..d.83-Register stammen aus der Community-Liste fuer eloBLOCK VE 9/14
-# und sind auf diesem VE24 NICHT verifiziert. HwcStarts blieb 0, obwohl der
-# eloBlock nachweislich Warmwasser gemacht hat (14,45 kW / Statenumber 24) ->
-# das Register traegt hier nicht die WW-Starts. Auskommentiert, bis die richtigen
-# Register per Register-Scan (Vorher/Nachher-Diff) gefunden sind; eine dauerhafte
-# 0 ist irrefuehrender als keine Entitaet.
+# --- Betriebszaehler: gibt es auf dem VE24 nicht ------------------------------
+# d.80..d.83 (Brenner-Stunden/Starts) liefern konstant 0 -- unabhaengig bestaetigt
+# von @Akeebaby in ebusd-configuration#254 (auch dort auskommentiert, "HcHours=0").
+# Ein Elektro-Kessel hat keinen Brenner.
+# Akeebabys eloBlock-spezifischer Block d.100..d.108 (E601/B301/C401/F001/A201 ...)
+# wurde am VE24 per Roh-Read geprueft (Format 0d<reg>01): TotalEnergy=ffffffff,
+# ElementHours/MaxPower=leer, E601=24 = reine Typenschild-Leistung (nicht live).
+# Ergebnis: der VE24 gibt KEINE sauberen Betriebszaehler und KEINE Live-Leistung
+# her. Aktuelle eloBlock-Leistung stattdessen extern per Shelly EM3 messen.
+# d.80..d.83 auskommentiert, damit keine dauerhafte 0 angezeigt wird.
 #r,,,HcHours,d.80 heating operation hours,,,b509,0d2800,value,,UIN,,h,hours
 #r,,,HcStarts,d.82 heating starts,,,b509,0d2900,value,,UIN,-100,,cycles
 #r,,,HwcHours,d.81 DHW operation hours,,,b509,0d2200,value,,UIN,,h,hours
