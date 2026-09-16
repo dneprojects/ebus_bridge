@@ -25,9 +25,13 @@
 # - </dev/null je Aufruf verhindert, dass ebusctl die Schleifen-Stdin frisst.
 START=${1:-0}
 END=${2:-255}
+SUBS=${3:-00 01}   # beide bekannten Sub-Bytes: 00 (Standard) und 01 (d.100..)
 r=$START
 while [ "$r" -le "$END" ]; do
   hx=$(printf '%02x' "$r")
-  printf '0d%s00 = %s\n' "$hx" "$(ebusctl hex 38b509030d${hx}00 </dev/null 2>&1)"
+  for s in $SUBS; do
+    printf '0d%s%s = %s\n' "$hx" "$s" \
+      "$(ebusctl hex 38b509030d${hx}${s} </dev/null 2>&1)"
+  done
   r=$((r + 1))
 done

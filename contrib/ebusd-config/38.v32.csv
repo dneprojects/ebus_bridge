@@ -23,16 +23,14 @@ r1,,,FlowTempDemand,d.09 flow setpoint demanded,,,b509,0d3900,value,,D2C,,°C,te
 r,,,WaterPressure,water pressure,,,b509,0d0200,value,,FLT,,bar,pressure,ign,,IGN:1,,,
 r,,,Templimiter,temperature limiter,,,b509,0d7700,value,,UCH,240=off;15=on,,
 r,,,Currenterror,current errors,,,b503,0001,error,,UIN,,,error number,error_1,,UIN,,,error number,error_2,,UIN,,,error number,error_3,,UIN,,,error number,error_4,,UIN,,,error number
-# --- Betriebszaehler: gibt es auf dem VE24 nicht ------------------------------
-# d.80..d.83 (Brenner-Stunden/Starts) liefern konstant 0 -- unabhaengig bestaetigt
-# von @Akeebaby in ebusd-configuration#254 (auch dort auskommentiert, "HcHours=0").
-# Ein Elektro-Kessel hat keinen Brenner.
-# Akeebabys eloBlock-spezifischer Block d.100..d.108 (E601/B301/C401/F001/A201 ...)
-# wurde am VE24 per Roh-Read geprueft (Format 0d<reg>01): TotalEnergy=ffffffff,
-# ElementHours/MaxPower=leer, E601=24 = reine Typenschild-Leistung (nicht live).
-# Ergebnis: der VE24 gibt KEINE sauberen Betriebszaehler und KEINE Live-Leistung
-# her. Aktuelle eloBlock-Leistung stattdessen extern per Shelly EM3 messen.
-# d.80..d.83 auskommentiert, damit keine dauerhafte 0 angezeigt wird.
+# --- Betriebszaehler: noch nicht lokalisiert ----------------------------------
+# d.80..d.83 (Brenner-Stunden/Starts) liefern konstant 0 -- auch bei @Akeebaby
+# (#254, dort ebenfalls auskommentiert). Akeebabys eloBlock-Block d.100..d.108
+# (sub=01) am VE24 per Roh-Read geprueft: meist leer/ungueltig (B301=ffffffff),
+# E601=24 = Typenschild-Leistung (idle 0 kW am Shelly, Register bleibt 24).
+# Die ECHTEN Zaehler sind damit nur noch nicht gefunden, NICHT widerlegt --
+# per Register-Scan (0d<reg>00 UND 0d<reg>01, Vorher/Nachher-Diff ueber einen
+# eloBlock-Lauf) suchen. Bis dahin auskommentiert, damit keine 0 erscheint.
 #r,,,HcHours,d.80 heating operation hours,,,b509,0d2800,value,,UIN,,h,hours
 #r,,,HcStarts,d.82 heating starts,,,b509,0d2900,value,,UIN,-100,,cycles
 #r,,,HwcHours,d.81 DHW operation hours,,,b509,0d2200,value,,UIN,,h,hours
