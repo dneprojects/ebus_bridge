@@ -257,6 +257,17 @@ _BOOL_ON = {"on", "yes", "true"}
 _BOOL_OFF = {"off", "no", "false"}
 
 
+def writable_control(desc: FieldDesc) -> bool:
+    """True, wenn ein schreibbares Feld von number/select/switch bedient wird.
+
+    Nur numerische (number) oder Enum-/Binär-Felder (select/switch) lassen sich
+    sinnvoll schreiben. Schreibbare Text-/Datums-/Hex-Felder passen in keine
+    dieser Plattformen -> sie werden read-only als Sensor gezeigt (sonst gäbe es
+    für sie gar keine Entität, z. B. die Zonen-Kurzbezeichnung).
+    """
+    return desc.writable and (desc.numeric or bool(desc.values))
+
+
 def is_binary(desc: FieldDesc) -> bool:
     """True, wenn das Feld eine reine On/Off-Enum ist (-> binary_sensor statt sensor)."""
     if not desc.values:

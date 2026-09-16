@@ -16,7 +16,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN
 from .coordinator import EbusdCoordinator
 from .entity import EbusdBaseEntity, add_fields_dynamically
-from .model import FieldDesc, is_binary
+from .model import FieldDesc, is_binary, writable_control
 
 # Bridge-Diagnose aus dem globalen ebusd-Abschnitt.
 # (key, Name, Einheit, Icon, state_class, standardmäßig aktiviert)
@@ -72,7 +72,11 @@ async def async_setup_entry(
         add_fields_dynamically(
             coordinator,
             async_add_entities,
-            lambda d: not d.writable and not is_binary(d) and coordinator.included(d),
+            lambda d: (
+                not is_binary(d)
+                and not writable_control(d)
+                and coordinator.included(d)
+            ),
             lambda d: EbusdSensor(coordinator, d),
         )
     )

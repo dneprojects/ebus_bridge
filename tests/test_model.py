@@ -267,3 +267,22 @@ def test_parse_decode_errors_skips_ident_and_empty():
     data = {"scan": {"messages": {"x": {"name": "x", "decodeerror": "e"}}},
             "c": {"messages": {"ok": {"name": "ok", "fields": {}}}}}
     assert model.parse_decode_errors(data) == set()
+
+
+def _wc_fd(**kw):
+    base = dict(circuit="c", message="m", field="value", label="m", unit=None,
+               values=None, numeric=False, min_value=None, max_value=None,
+               step=None, writable=False)
+    base.update(kw)
+    return model.FieldDesc(**base)
+
+
+def test_writable_control_only_for_number_select_switch():
+    # schreibbares Text-Feld (Zonen-Kurzbezeichnung) -> keine Schreib-Plattform
+    assert model.writable_control(_wc_fd(writable=True)) is False
+    # schreibbar numerisch -> number
+    assert model.writable_control(_wc_fd(writable=True, numeric=True, step=1)) is True
+    # schreibbar mit Werte-Liste -> select/switch
+    assert model.writable_control(_wc_fd(writable=True, values={"0": "off"})) is True
+    # read-only -> nie Schreib-Control
+    assert model.writable_control(_wc_fd(writable=False, numeric=True)) is False

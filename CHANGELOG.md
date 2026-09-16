@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.6.3
+- Writable text/date fields (e.g. zone short names) now show up as read-only sensors instead of getting no entity at all.
+
 ## 1.6.2
 - Messages whose ebusd response keeps failing to decode are dropped from the read rotation, so a wrong CSV definition no longer wastes a read and logs an error every cycle.
 
