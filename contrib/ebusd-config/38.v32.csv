@@ -52,15 +52,15 @@ r,,,ProbeReg3803,d.153? power limiter value (UNVERIFIZIERT),,,b509,0d3803,value,
 r,,,WaterPressure,water pressure,,,b509,0d0200,value,,FLT,,bar,pressure,ign,,IGN:1,,,
 r,,,Templimiter,temperature limiter,,,b509,0d7700,value,,UCH,240=off;15=on,,
 r,,,Currenterror,current errors,,,b503,0001,error,,UIN,,,error number,error_1,,UIN,,,error number,error_2,,UIN,,,error number,error_3,,UIN,,,error number,error_4,,UIN,,,error number
-# --- Betriebszaehler D.80 Heizstunden ----------------------------------------
-# NICHT abschliessend belegt. Register 3A03 liefert am VE24 einen 2-Byte-Wert 45
-# -- plausibel fuer einen Stundenzaehler, aber NICHT als D.80 bewiesen (die Zahl
-# koennte alles sein). Die Gfermoto-Quelle verortet D.80 an 0d2800 mit Typ
-# hoursum2 -- unser frueheres 0d2800 las 0, aber vermutlich weil wir UIN statt
-# hoursum2 nutzten. TODO: 0d2800 als hoursum2 gegen 3A03 gegenpruefen, dann
-# entscheiden, welches der echte Zaehler ist.
-r,,,ProbeHcHours3a03,d.80? heating hours (UNVERIFIZIERT),,,b509,0d3a03,value,,UIN,,h,addr unconfirmed
-#r,,,HcHours2800,d.80 heating hours (Gfermoto, hoursum2),,,b509,0d2800,value,,hoursum2,,h,re-test
+# --- Betriebszaehler D.80 Heizstunden: KEIN bestaetigter Zaehler -------------
+# Gfermotos dokumentierte Adresse 0d2800 liefert am VE24 roh 020000 = 0. Fuer
+# einen Backup-Heizer, der praktisch nie laeuft, sind 0 Heizstunden ERWARTET ->
+# 2800 ist damit hoechstwahrscheinlich das echte D.80 (Wert 0, uninteressant).
+# 3A03 liefert 45 -- aber wenn der Heizer nie lief, koennen das keine Heizstunden
+# sein; 3A03 ist ein unidentifiziertes Register. Beide daher nur als Probe.
+# Sichere Zuordnung braucht einen echten Heizlauf + Grab-Diff.
+r,,,ProbeReg2800,d.80? heating hours (Gfermoto-Adresse, liest 0),,,b509,0d2800,value,,UIN,,,addr per source, value 0
+r,,,ProbeReg3a03,unidentified (liest 45, NICHT als D.80 belegt),,,b509,0d3a03,value,,UIN,,,addr unconfirmed
 r,,,TemplimiterCutoffs,d.60 safety limiter cut offs,,,b509,0d2000,value,,UCH,,,
 # --- Einstellungen / Typschild (praktisch konstant) --------------------------
 r,,,PartloadHcKW,d.00 heating partload,,,b509,0d6c00,value,,UCH,,kW,heating part load
