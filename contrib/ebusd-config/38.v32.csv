@@ -35,18 +35,23 @@ r,,,Storageloadpump,d.12 storage load pump,,,b509,0d9e00,value,,UCH,,%,
 # Konflikt mit dem Regler am geteilten Bus -> vorerst nicht schreibbar.
 r,,,HeatingSwitch,d.23 wintermode active,,,b509,0df203,value,,UCH,0=off;1=on,,
 r,,,HwcSwitch,DHW on/off,,,b509,0df303,value,,UCH,0=off;1=on,,
+# --- Elektro-Register auf Sub 02/03, am VE24 verifiziert (Gfermoto/Vaillant #1)
+# D.155 aktuelle Leistung als 9-Bit-Relais-Bitmaske: popcount(Wert) x 2 = kW.
+# ebusd kann kein popcount -> Rohwert hier, kW per HA-Template.
+r1,,,RelayBitmask,d.155 active relay bitmask,,,b509,0d4003,value,,UIN,,,popcount x 2 = current kW
+# Leistungsbegrenzer (laut #1 schreibbar; hier NUR lesend -- Schreiben erst nach
+# Test wegen Regler am geteilten Bus).
+r,,,PowerLimiterPhase,d.152 power limiter phase,,,b509,0d3703,value,,UCH,0=nolimit;1=phase1;2=phase2;3=phase3;4=allphases,,
+r,,,PowerLimiterValue,d.153 power limiter reduction,,,b509,0d3803,value,,UIN,100,kW,subtracted from max power
 # --- Langsam veraenderlich ---------------------------------------------------
 r,,,WaterPressure,water pressure,,,b509,0d0200,value,,FLT,,bar,pressure,ign,,IGN:1,,,
 r,,,Templimiter,temperature limiter,,,b509,0d7700,value,,UCH,240=off;15=on,,
 r,,,Currenterror,current errors,,,b503,0001,error,,UIN,,,error number,error_1,,UIN,,,error number,error_2,,UIN,,,error number,error_3,,UIN,,,error number,error_4,,UIN,,,error number
-# --- Betriebszaehler: noch nicht lokalisiert ----------------------------------
-# d.80..d.83 (Brenner-Stunden/Starts) liefern konstant 0 -- auch bei @Akeebaby
-# und @AznKid45 (#254), deren eloBloecke NACHWEISLICH liefen. Sehr wahrscheinlich
-# display-only, nicht ueber eBUS lesbar. Auskommentiert, damit keine 0 erscheint.
-#r,,,HcHours,d.80 heating operation hours,,,b509,0d2800,value,,UIN,,h,hours
-#r,,,HcStarts,d.82 heating starts,,,b509,0d2900,value,,UIN,-100,,cycles
-#r,,,HwcHours,d.81 DHW operation hours,,,b509,0d2200,value,,UIN,,h,hours
-#r,,,HwcStarts,d.83 DHW starts,,,b509,0d2300,value,,UIN,-100,,cycles
+# --- Betriebszaehler: gefunden auf Sub 03 (Gfermoto/Vaillant #1) --------------
+# Die Gaskessel-Adressen 0d28/29/22/23 (Sub 00) lieferten 0 = FALSCHE Adressen.
+# Echt: D.80 Heizstunden liegt auf Sub 03 (3A03), am VE24 verifiziert = 45 h.
+# Weitere Zaehler D.81/82/83 evtl. bei 3B03/3C03/3D03 (noch zu pruefen).
+r,,,HcHours,d.80 heating operation hours,,,b509,0d3a03,value,,UIN,,h,central heating operation hours
 r,,,TemplimiterCutoffs,d.60 safety limiter cut offs,,,b509,0d2000,value,,UCH,,,
 # --- Einstellungen / Typschild (praktisch konstant) --------------------------
 r,,,PartloadHcKW,d.00 heating partload,,,b509,0d6c00,value,,UCH,,kW,heating part load
