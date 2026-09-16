@@ -36,6 +36,7 @@ def _device_name(circuit: str, model: str | None) -> str:
 _TEMP_UNITS = {"°C", "K"}
 
 _NONTEMP_KEYWORD: list[tuple[str, str]] = [
+    ("name", "mdi:rename"),  # Zonen-Namen/Kurzbezeichnungen (Name1/2, Shortname)
     ("pump", "mdi:pump"),
     ("valve", "mdi:pipe-valve"),
     ("compressor", "mdi:heat-pump"),

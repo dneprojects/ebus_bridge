@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.4
+- Auto-removed messages are retried hourly and revived on their own once they decode again, so a corrected CSV definition no longer needs an integration reload.
+- Zone name and short-name entities now use a rename icon.
+
 ## 1.6.3
 - Writable text/date fields (e.g. zone short names) now show up as read-only sensors instead of getting no entity at all.
 

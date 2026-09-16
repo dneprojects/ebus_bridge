@@ -44,6 +44,10 @@ _DEF_REFRESH_S = 600
 # Koppler-Timeout (wp1) liefert keinen Wert, ist aber KEIN Decode-Fehler und darf
 # eine echte Nachricht nicht aussortieren.
 _MAX_DECODE_FAILS = 3
+# So oft werden aussortierte ("tote") Nachrichten erneut gelesen. Dekodiert eine
+# wieder (z. B. weil die CSV-Definition korrigiert wurde), wird sie automatisch
+# wiederbelebt -- ohne Integrations-Reload.
+_REVIVE_S = 3600
 
 
 class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
@@ -81,6 +85,7 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         self._last_def_refresh: float | None = None
         self._decode_fails: dict[tuple[str, str], int] = {}
         self._dead: set[tuple[str, str]] = set()
+        self._last_revive: float | None = None
         self._fast = self._collect_fast(fields, fast or [])
         if self._fast:
             _LOGGER.info(
@@ -207,11 +212,31 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
                     "Lese-Rotation genommen (CSV-Definition prüfen)", *key
                 )
 
+    def _revive_probe(self) -> list[tuple[str, str]]:
+        """Tote Nachrichten in großen Abständen einmal erneut lesen.
+
+        Der erzwungene Read löst einen frischen Dekodier-Versuch aus; klappt er
+        (korrigierte Definition), nimmt `_track_decode_errors` die Nachricht von
+        allein wieder auf. Sonst bleibt sie tot bis zum nächsten Versuch.
+        """
+        if not self._dead:
+            return []
+        loop = asyncio.get_running_loop()
+        if self._last_revive is None:
+            self._last_revive = loop.time()
+            return []
+        if loop.time() - self._last_revive < _REVIVE_S:
+            return []
+        self._last_revive = loop.time()
+        _LOGGER.debug("Selbstheilung: %d tote Nachricht(en) erneut probiert", len(self._dead))
+        return list(self._dead)
+
     async def _async_update_data(self) -> dict[tuple[str, str, str], Any]:
         await self._maybe_refresh_definitions()
         # Erzwungen lesen: erst die vom Nutzer benannten, dann die verharzten
         # reihum -- begrenzt, damit der Bus nicht geflutet wird.
         targets = [key for key in self._fast if key not in self._dead]
+        targets += self._revive_probe()
         stale = self._stale()
         if stale:
             take = min(_TOPUP_MAX, max(_TOPUP_MIN, len(stale) // _TOPUP_PER_BACKLOG))
