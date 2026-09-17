@@ -24,6 +24,7 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import EbusdCoordinator
+from .entity import build_device_info
 from .services import async_setup_services, async_unload_services
 
 _LOGGER = logging.getLogger(__name__)
@@ -70,7 +71,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 
     # Bridge-Elterngerät: die eBUS-Kreise hängen per via_device darunter.
-    dr.async_get(hass).async_get_or_create(
+    registry = dr.async_get(hass)
+    registry.async_get_or_create(
         config_entry_id=entry.entry_id,
         identifiers={(DOMAIN, entry.entry_id)},
         name="eBUS Bridge",
@@ -79,6 +81,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         sw_version=coordinator.global_data.get("version"),
         configuration_url=f"http://{host}:{entry.data.get(CONF_HTTP_PORT, DEFAULT_HTTP_PORT)}/data",
     )
+
+    # Ein Gerät je gescanntem eBUS-Kreis anlegen -- auch ohne (Wert-)Entität,
+    # damit jeder Bus-Teilnehmer mit Firmware/Hardware sichtbar ist. Sonst
+    # taucht z. B. das sensoNET nie auf, das ausser der Kennung nichts am Bus
+    # preisgibt. Entitäten hängen sich später über dieselben identifiers an.
+    for circuit in coordinator.device_meta:
+        registry.async_get_or_create(
+            config_entry_id=entry.entry_id,
+            **build_device_info(coordinator, circuit),
+        )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     await async_setup_services(hass)

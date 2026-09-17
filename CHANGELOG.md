@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.6.5
+- Every scanned eBUS device now appears with its firmware/hardware even when it exposes no readable values (e.g. the sensoNET gateway).
+
 ## 1.6.4
 - Auto-removed messages are retried hourly and revived on their own once they decode again, so a corrected CSV definition no longer needs an integration reload.
 - Zone name and short-name entities now use a rename icon.
