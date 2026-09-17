@@ -32,9 +32,17 @@ _LOGGER = logging.getLogger(__name__)
 _SELF_MAINTAINED_S = 1800
 # Erzwungene Bus-Reads je Zyklus: viele, solange ein Rückstand aufzuholen ist,
 # danach nur noch die Grundlast. ebusd führt sie blockierend aus, deshalb gedeckelt.
-_TOPUP_MAX = 20
+_TOPUP_MAX = 30
 _TOPUP_MIN = 8
-_TOPUP_PER_BACKLOG = 20  # je so viele offene Nachrichten ein Read mehr
+_TOPUP_PER_BACKLOG = 5  # je so viele offene Nachrichten ein Read mehr
+# Erzwungene Reads laufen begrenzt PARALLEL: ebusd serialisiert den Bus selbst,
+# die Parallelitaet ueberlappt nur HTTP-/Arbitrierungs-Wartezeiten -> deutlich
+# schnelleres Nachladen. Klein gehalten, um ebusd/Bus nicht zu ueberfahren.
+_REFRESH_CONCURRENCY = 3
+# Anteil des Zyklus, den das Nachholen blockierend nutzen darf. Waehrend des
+# einmaligen Auffuellens (grosser Rueckstand) grosszuegig; steht der Rueckstand,
+# wird das Budget ohnehin kaum angefasst.
+_REFRESH_BUDGET_FRAC = 0.8
 # So oft die Definitionen neu abgeglichen werden. Neu in ebusd geladene
 # Nachrichten (nach Config-Änderung) werden dann von allein aufgenommen --
 # ohne Integrations-Reload.
@@ -133,22 +141,35 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         return not any(pattern in name for pattern in self._exclude)
 
     async def _refresh(self, targets: list[tuple[str, str]]) -> None:
-        """Nachrichten direkt vom Bus nachholen (ebusd liest dabei blockierend).
+        """Nachrichten direkt vom Bus nachholen, begrenzt PARALLEL.
 
-        Zeitbremse: antwortet ein Gerät nicht, läuft der Read in ebusds eigenen
-        Timeout. Ohne Deckel könnten wenige solcher Nachrichten den Zyklus
-        überziehen und die aktuellen Werte ausbremsen.
+        ebusd liest blockierend und serialisiert den Bus selbst; die Parallelitaet
+        (Semaphore) ueberlappt nur die HTTP-/Wartezeiten und beschleunigt so das
+        Nachladen deutlich. Zeitbremse: nach dem Budget werden keine neuen Reads
+        mehr gestartet (bereits laufende beenden noch), damit ein nicht
+        antwortendes Geraet den Zyklus nicht ueberzieht.
         """
+        if not targets:
+            return
         loop = asyncio.get_running_loop()
-        deadline = loop.time() + max(5.0, self._max_age * 0.5)
-        for circuit, message in targets:
-            if loop.time() > deadline:
-                _LOGGER.debug("Zeitbudget fürs Nachholen erschöpft, Rest folgt")
-                return
-            try:
-                await self.client.refresh(circuit, message, self._max_age)
-            except EbusdError as err:  # einzelne Nachricht nicht lesbar -> weiter
-                _LOGGER.debug("Direktes Lesen von %s/%s: %s", circuit, message, err)
+        deadline = loop.time() + max(5.0, self._max_age * _REFRESH_BUDGET_FRAC)
+        sem = asyncio.Semaphore(_REFRESH_CONCURRENCY)
+        exhausted = False
+
+        async def _one(circuit: str, message: str) -> None:
+            nonlocal exhausted
+            async with sem:
+                if loop.time() > deadline:  # Budget voll -> keinen neuen Read starten
+                    exhausted = True
+                    return
+                try:
+                    await self.client.refresh(circuit, message, self._max_age)
+                except EbusdError as err:  # einzelne Nachricht nicht lesbar -> weiter
+                    _LOGGER.debug("Direktes Lesen von %s/%s: %s", circuit, message, err)
+
+        await asyncio.gather(*(_one(c, m) for c, m in targets))
+        if exhausted:
+            _LOGGER.debug("Zeitbudget fürs Nachholen erschöpft, Rest folgt")
 
     def _stale(self) -> list[tuple[str, str]]:
         """Nachrichten, die der Bus nicht von allein frisch hält, älteste zuerst.

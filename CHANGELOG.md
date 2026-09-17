@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.6.12
+- Catch-up reads now run a few in parallel and use more of each cycle, so entities fill several times faster after a reload.
+
 ## 1.6.11
 - Fault-memory sensors (`Currenterror`) now show "ok" when there is no fault instead of appearing unavailable.
 
