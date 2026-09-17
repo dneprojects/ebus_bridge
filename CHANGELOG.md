@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.6.8
+- Never-polled registers fill about twice as fast after a restart (still idle-only, so normal traffic stays responsive).
+
 ## 1.6.7
 - The initial read of never-polled registers is now gentle (only when nothing stale is due, a couple per cycle), so it no longer slows down the bus.
 

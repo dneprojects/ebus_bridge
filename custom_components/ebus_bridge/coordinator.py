@@ -54,7 +54,7 @@ _REVIVE_S = 3600
 # gesamten Bus aus. Daher nur wenige je Zyklus UND nur, wenn nichts Verharztes
 # ansteht; nach wenigen erfolglosen Versuchen wird aufgegeben.
 _UNREAD_MAX_TRIES = 3
-_UNREAD_PER_CYCLE = 2
+_UNREAD_PER_CYCLE = 4
 
 
 class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
