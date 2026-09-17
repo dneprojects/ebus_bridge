@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.6.6
+- Read-only registers that no bus master polls now get an initial forced read, so their entities become available instead of staying "unavailable".
+
 ## 1.6.5
 - Every scanned eBUS device now appears with its firmware/hardware even when it exposes no readable values (e.g. the sensoNET gateway).
 

@@ -48,6 +48,12 @@ _MAX_DECODE_FAILS = 3
 # wieder (z. B. weil die CSV-Definition korrigiert wurde), wird sie automatisch
 # wiederbelebt -- ohne Integrations-Reload.
 _REVIVE_S = 3600
+# Lesbare Nachrichten, die ebusd noch NIE gelesen hat (kein lastup, kein Wert),
+# werden ein paar Mal aktiv angestossen. Sonst bleibt ein reines `r`-Register, das
+# weder ebusd pollt noch ein anderer Master abfragt, dauerhaft ohne Wert und die
+# Entitaet "nicht verfuegbar". Nach so vielen erfolglosen Versuchen wird aufgegeben
+# (Gerät implementiert/antwortet nicht), damit es den Zyklus nicht dauerhaft bremst.
+_UNREAD_MAX_TRIES = 5
 
 
 class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
@@ -86,6 +92,7 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         self._decode_fails: dict[tuple[str, str], int] = {}
         self._dead: set[tuple[str, str]] = set()
         self._last_revive: float | None = None
+        self._unread_tries: dict[tuple[str, str], int] = {}
         self._fast = self._collect_fast(fields, fast or [])
         if self._fast:
             _LOGGER.info(
@@ -231,6 +238,32 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         _LOGGER.debug("Selbstheilung: %d tote Nachricht(en) erneut probiert", len(self._dead))
         return list(self._dead)
 
+    def _unread(self) -> list[tuple[str, str]]:
+        """Lesbare Nachrichten ohne jeden bisherigen Wert einmalig anstossen.
+
+        `_stale` deckt nur Nachrichten mit vorhandenem Zeitstempel ab. Ein
+        `r`-Register, das weder ebusd pollt noch ein anderer Master abfragt, hat
+        aber nie einen `lastup` -> es fiele durch und bliebe ewig ohne Wert
+        ("nicht verfügbar"). Solche hier ein paar Mal aktiv lesen; sobald ein
+        Wert kommt, greift danach `_stale`.
+        """
+        if not self._ages:  # ohne lastup ist die Frische-Logik ohnehin aus
+            return []
+        valued = {(c, m) for (c, m, _f), v in (self.data or {}).items() if v is not None}
+        out: list[tuple[str, str]] = []
+        seen: set[tuple[str, str]] = set()
+        for desc in self.fields:
+            key = (desc.circuit, desc.message)
+            if key in seen or desc.writable:  # reine Schreibnachrichten nie lesen
+                continue
+            if (key not in self._ages and key not in valued
+                    and key not in self._dead and key not in self._fast
+                    and self.included_key(key)
+                    and self._unread_tries.get(key, 0) < _UNREAD_MAX_TRIES):
+                seen.add(key)
+                out.append(key)
+        return out
+
     async def _async_update_data(self) -> dict[tuple[str, str, str], Any]:
         await self._maybe_refresh_definitions()
         # Erzwungen lesen: erst die vom Nutzer benannten, dann die verharzten
@@ -244,6 +277,13 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
             targets += stale[self._cursor : self._cursor + take]
             self._cursor += take
             _LOGGER.debug("%d Nachrichten verharzt, hole %d nach", len(stale), take)
+        unread = self._unread()
+        if unread:
+            take = min(_TOPUP_MAX, len(unread))
+            for key in unread[:take]:
+                self._unread_tries[key] = self._unread_tries.get(key, 0) + 1
+            targets += unread[:take]
+            _LOGGER.debug("%d ungelesene Nachricht(en), stosse %d an", len(unread), take)
         if targets:
             await self._refresh(targets)
 
