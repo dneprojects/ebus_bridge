@@ -59,8 +59,8 @@ r,,,Currenterror,current errors,,,b503,0001,error,,UIN,,,error number,error_1,,U
 # 3A03 liefert 45 -- aber wenn der Heizer nie lief, koennen das keine Heizstunden
 # sein; 3A03 ist ein unidentifiziertes Register. Beide daher nur als Probe.
 # Sichere Zuordnung braucht einen echten Heizlauf + Grab-Diff.
-r,,,ProbeReg2800,d.80? heating hours (Gfermoto-Adresse, liest 0),,,b509,0d2800,value,,UIN,,,addr per source, value 0
-r,,,ProbeReg3a03,unidentified (liest 45, NICHT als D.80 belegt),,,b509,0d3a03,value,,UIN,,,addr unconfirmed
+r,,,ProbeReg2800,d.80? heating hours (Gfermoto addr - reads 0),,,b509,0d2800,value,,UIN,,,addr per source; value 0
+r,,,ProbeReg3a03,unidentified - reads 45 - not proven as D.80,,,b509,0d3a03,value,,UIN,,,addr unconfirmed
 r,,,TemplimiterCutoffs,d.60 safety limiter cut offs,,,b509,0d2000,value,,UCH,,,
 # --- Einstellungen / Typschild (praktisch konstant) --------------------------
 r,,,PartloadHcKW,d.00 heating partload,,,b509,0d6c00,value,,UCH,,kW,heating part load
