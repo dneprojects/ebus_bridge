@@ -5,6 +5,7 @@ from collections.abc import Callable
 from typing import Any
 
 from homeassistant.core import callback
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -93,15 +94,22 @@ def _icon_for(desc: FieldDesc) -> str | None:
 def build_device_info(coordinator: EbusdCoordinator, circuit: str) -> DeviceInfo:
     """Gerät je eBUS-Kreis – Klarname (kein „ebusd"), hängt als Kind an der Bridge."""
     meta = coordinator.device_meta.get(circuit, {})
-    return DeviceInfo(
+    info = DeviceInfo(
         identifiers={(DOMAIN, circuit)},
         name=_device_name(circuit, meta.get("model")),
         manufacturer=meta.get("manufacturer", "Vaillant"),
         model=meta.get("model"),
         sw_version=meta.get("sw"),
         hw_version=meta.get("hw"),
-        via_device=coordinator.bridge_id,
     )
+    # via_device (Identifier-Tupel) ist ab HA 2027.8.0 entfernt -- stattdessen
+    # die tatsächliche Registry-ID des Bridge-Elterngeräts auflösen.
+    bridge_device = dr.async_get(coordinator.hass).async_get_device(
+        identifiers={coordinator.bridge_id}
+    )
+    if bridge_device is not None:
+        info["via_device_id"] = bridge_device.id
+    return info
 
 
 def add_fields_dynamically(

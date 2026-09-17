@@ -58,7 +58,7 @@ class EbusdConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         else:
             try:
                 default_host = await network.async_get_source_ip(
-                    self.hass, target=network.MDNS_TARGET_IP
+                    self.hass, target_ip=network.MDNS_TARGET_IP
                 )
             except HomeAssistantError:
                 default_host = ""

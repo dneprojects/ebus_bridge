@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.13
+- Fix: `network.async_get_source_ip` call in config flow used the removed `target` kwarg; renamed to `target_ip` (current HA API).
+- Fix: circuit devices now link to the bridge device via `via_device_id` (resolved registry id) instead of the deprecated `via_device` identifier tuple.
+- Fix: never-polled messages with a `lastup: 0` entry (as opposed to no entry at all) were wrongly treated as already read and never got their initial forced read.
+- Fix: passively-monitored multi-field commands (e.g. `SetMode`) are now excluded from forced reads; ebusd cannot answer an active read for them, which was logging `ERR: end of input reached` every cycle.
+
 ## 1.6.12
 - Catch-up reads now run a few in parallel and use more of each cycle, so entities fill several times faster after a reload.
 
