@@ -75,9 +75,10 @@ r,,,PartloadHwcKW,d.77 hot water partload,,,b509,0da900,value,,UCH,,kW,storage c
 # aktuelle Leistung -- Schreibtest an PartloadHwc aenderte sie nicht. 0x18=24 =
 # VE24-Max in kW, Rest undekodiert -> bewusst als HEX-Diagnosewert belassen.
 r,,,PowerValue,power values min/max (statisch),,,b509,0daa00,value,,HEX:6,,,
-# HwcTemp entfernt: unser 0d0100 war NICHT die DHW-Temperatur. Echtes d.03 liegt
-# laut Akeebaby bei 0d1600 (bei uns 0 = kein Fuehler); Ist-Speichertemp via ctlv3.
-#r,,,HwcTemp,d.03 DHW temperature,,,b509,0d0100,value,,D2C,,°C,temperature
+# HwcTemp 0d0100 = WW-SOLLWERT den der eloBlock vorgegeben bekommt (Spiegel);
+# NICHT die Ist-Speichertemp (die kommt via ctlv3 HwcStorageTemp). Feldbestaetigt:
+# beim WW-Bereiten 60, sonst ~50 -- also nutzbar, daher wieder aktiv.
+r,,,HwcTemp,DHW setpoint mirror,,,b509,0d0100,value,,D2C,,°C,temperature
 # unbestaetigt: Akeebaby verortet d.20 bei 0d4304; unser 0dd900 (=70) ist ungeklaert.
 r,,,HwcTempMax,d.20 max tank setpoint (unverifiziert),,,b509,0dd900,value,,D2C,,°C,temperature
 # --- unverifiziert: nicht in Akeebabys #254-Karte, Werte plausibel, Labels aber
