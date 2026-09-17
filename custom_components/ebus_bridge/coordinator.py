@@ -271,6 +271,11 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         aber nie einen `lastup` -> es fiele durch und bliebe ewig ohne Wert
         ("nicht verfügbar"). Solche hier ein paar Mal aktiv lesen; sobald ein
         Wert kommt, greift danach `_stale`.
+
+        `lastup <= 0` zählt dabei genauso als "nie gelesen" wie ein ganz
+        fehlender Eintrag -- ebusd liefert für frisch gescannte Nachrichten
+        einen Eintrag mit `lastup: 0`, der sonst fälschlich als bereits bekannt
+        durchgehen und die Erstlesung dauerhaft verhindern würde.
         """
         if not self._ages:  # ohne lastup ist die Frische-Logik ohnehin aus
             return []
@@ -279,9 +284,12 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
         seen: set[tuple[str, str]] = set()
         for desc in self.fields:
             key = (desc.circuit, desc.message)
-            if key in seen or desc.writable:  # reine Schreibnachrichten nie lesen
+            # Reine Schreibnachrichten nie erzwungen lesen; ebusd kann sie nicht
+            # per aktivem Read beantworten (bei passiv mitgehörten Kommandos wie
+            # SetMode führt der Versuch sogar zu "ERR: end of input reached").
+            if key in seen or desc.writable or desc.passive:
                 continue
-            if (key not in self._ages and key not in valued
+            if (self._ages.get(key, 0) <= 0 and key not in valued
                     and key not in self._dead and key not in self._fast
                     and self.included_key(key)
                     and self._unread_tries.get(key, 0) < _UNREAD_MAX_TRIES):
