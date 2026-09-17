@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.6.7
+- The initial read of never-polled registers is now gentle (only when nothing stale is due, a couple per cycle), so it no longer slows down the bus.
+
 ## 1.6.6
 - Read-only registers that no bus master polls now get an initial forced read, so their entities become available instead of staying "unavailable".
 

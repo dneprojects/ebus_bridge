@@ -49,11 +49,12 @@ _MAX_DECODE_FAILS = 3
 # wiederbelebt -- ohne Integrations-Reload.
 _REVIVE_S = 3600
 # Lesbare Nachrichten, die ebusd noch NIE gelesen hat (kein lastup, kein Wert),
-# werden ein paar Mal aktiv angestossen. Sonst bleibt ein reines `r`-Register, das
-# weder ebusd pollt noch ein anderer Master abfragt, dauerhaft ohne Wert und die
-# Entitaet "nicht verfuegbar". Nach so vielen erfolglosen Versuchen wird aufgegeben
-# (Gerät implementiert/antwortet nicht), damit es den Zyklus nicht dauerhaft bremst.
-_UNREAD_MAX_TRIES = 5
+# werden aktiv angestossen -- aber SEHR sanft. Erzwungene Bus-Reads sind blockierend,
+# und die, die ins Timeout laufen (Koppler/nicht implementiert), bremsen sonst den
+# gesamten Bus aus. Daher nur wenige je Zyklus UND nur, wenn nichts Verharztes
+# ansteht; nach wenigen erfolglosen Versuchen wird aufgegeben.
+_UNREAD_MAX_TRIES = 3
+_UNREAD_PER_CYCLE = 2
 
 
 class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
@@ -277,13 +278,20 @@ class EbusdCoordinator(DataUpdateCoordinator[dict[tuple[str, str, str], Any]]):
             targets += stale[self._cursor : self._cursor + take]
             self._cursor += take
             _LOGGER.debug("%d Nachrichten verharzt, hole %d nach", len(stale), take)
-        unread = self._unread()
-        if unread:
-            take = min(_TOPUP_MAX, len(unread))
-            for key in unread[:take]:
-                self._unread_tries[key] = self._unread_tries.get(key, 0) + 1
-            targets += unread[:take]
-            _LOGGER.debug("%d ungelesene Nachricht(en), stosse %d an", len(unread), take)
+        else:
+            # Nur wenn NICHTS Verharztes ansteht: Erstwerte sehr sanft nachziehen
+            # (wenige je Zyklus). So konkurrieren die blockierenden Erst-Reads --
+            # v. a. die, die ins Timeout laufen -- nie mit dem laufenden Verkehr und
+            # bremsen den Bus nicht aus.
+            unread = self._unread()
+            if unread:
+                take = min(_UNREAD_PER_CYCLE, len(unread))
+                for key in unread[:take]:
+                    self._unread_tries[key] = self._unread_tries.get(key, 0) + 1
+                targets += unread[:take]
+                _LOGGER.debug(
+                    "%d ungelesene Nachricht(en), stosse %d sanft an", len(unread), take
+                )
         if targets:
             await self._refresh(targets)
 
