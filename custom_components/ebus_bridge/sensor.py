@@ -16,7 +16,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN
 from .coordinator import EbusdCoordinator
 from .entity import EbusdBaseEntity, add_fields_dynamically
-from .model import FieldDesc, is_binary, writable_control
+from .model import FieldDesc, is_binary, is_error_status, writable_control
 
 # Bridge-Diagnose aus dem globalen ebusd-Abschnitt.
 # (key, Name, Einheit, Icon, state_class, standardmäßig aktiviert)
@@ -78,6 +78,7 @@ async def async_setup_entry(
                 and coordinator.included(d)
             ),
             lambda d: EbusdSensor(coordinator, d),
+            always=is_error_status,  # Fehlerspeicher auch ohne Fehler anzeigen
         )
     )
     async_add_entities(
@@ -92,6 +93,13 @@ class EbusdSensor(EbusdBaseEntity, SensorEntity):
     def __init__(self, coordinator: EbusdCoordinator, desc: FieldDesc) -> None:
         super().__init__(coordinator, desc)
         self._attr_unique_id = f"{DOMAIN}_{desc.uid}"
+        self._is_error = is_error_status(desc)
+        if self._is_error:
+            # Fehlerspeicher: Status, kein Messwert -> kein device_/state_class.
+            # Leerer Platz zeigt "ok"; Entitaet bleibt sichtbar (siehe available).
+            self._attr_icon = "mdi:alert-circle-check-outline"
+            self._attr_entity_category = EntityCategory.DIAGNOSTIC
+            return
         if desc.unit:
             self._attr_native_unit_of_measurement = desc.unit
         self._attr_device_class, self._attr_state_class = _classes(desc)
@@ -100,8 +108,18 @@ class EbusdSensor(EbusdBaseEntity, SensorEntity):
             self._attr_suggested_display_precision = precision
 
     @property
+    def available(self) -> bool:
+        # Fehlerspeicher immer sichtbar, solange ebusd erreichbar ist -- "leer"
+        # heisst "kein Fehler", nicht "nicht verfuegbar".
+        if self._is_error:
+            return self.coordinator.last_update_success
+        return super().available
+
+    @property
     def native_value(self):
         value = self._value
+        if self._is_error:
+            return "ok" if value is None else str(value)
         if value is None:
             return None
         if self._desc.numeric:

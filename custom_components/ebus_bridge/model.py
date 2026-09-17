@@ -268,6 +268,16 @@ def writable_control(desc: FieldDesc) -> bool:
     return desc.writable and (desc.numeric or bool(desc.values))
 
 
+def is_error_status(desc: FieldDesc) -> bool:
+    """Fehlerspeicher-Feld der Vaillant-`Currenterror`-Nachricht.
+
+    Ein leerer Fehlerplatz liefert keinen Wert (None) -> die Entitaet waere sonst
+    dauerhaft "nicht verfuegbar". Solche Felder sollen als Status IMMER sichtbar
+    sein und leer als "ok" (kein Fehler) anzeigen; bei echter Stoerung den Code.
+    """
+    return desc.message.lower() == "currenterror"
+
+
 def is_binary(desc: FieldDesc) -> bool:
     """True, wenn das Feld eine reine On/Off-Enum ist (-> binary_sensor statt sensor)."""
     if not desc.values:

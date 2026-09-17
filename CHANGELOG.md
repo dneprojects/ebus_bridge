@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.6.11
+- Fault-memory sensors (`Currenterror`) now show "ok" when there is no fault instead of appearing unavailable.
+
 ## 1.6.10
 - Rarely-changing values are refreshed every 30 min instead of every 10, so the top-up backlog no longer stays permanently full and entities fill faster after a reload.
 

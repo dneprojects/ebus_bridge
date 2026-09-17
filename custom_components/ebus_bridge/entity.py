@@ -109,6 +109,7 @@ def add_fields_dynamically(
     async_add_entities: AddEntitiesCallback,
     matches: Callable[[FieldDesc], bool],
     build: Callable[[FieldDesc], Any],
+    always: Callable[[FieldDesc], bool] | None = None,
 ) -> Callable[[], None]:
     """Entities anlegen, sobald ein Feld erstmals einen Wert hat.
 
@@ -116,6 +117,9 @@ def add_fields_dynamically(
     Würde man nur beim Setup prüfen, fehlte dauerhaft alles, was zu diesem
     Zeitpunkt noch keinen Wert hatte -- und der Nutzer müsste neu laden. Felder
     ohne Wert legen umgekehrt keine Karteileichen an (nicht bestückte Hardware).
+
+    `always`: Felder, die AUCH ohne Wert angelegt werden (z. B. Fehlerspeicher --
+    leer = "kein Fehler", soll trotzdem als Status sichtbar sein).
 
     Rückgabe: Abmelde-Funktion für den Coordinator-Listener.
     """
@@ -127,7 +131,7 @@ def add_fields_dynamically(
         for desc in coordinator.fields:
             if desc.key in known or not matches(desc):
                 continue
-            if coordinator.data.get(desc.key) is None:
+            if coordinator.data.get(desc.key) is None and not (always and always(desc)):
                 continue
             known.add(desc.key)
             new.append(build(desc))

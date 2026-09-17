@@ -140,6 +140,16 @@ def test_is_binary_and_tokens():
     assert model.bool_tokens(_fd({"0": "no", "1": "yes"})) == ("yes", "no")
 
 
+def test_is_error_status():
+    err = model.FieldDesc(
+        circuit="ctlv3", message="Currenterror", field="error", label="l",
+        unit=None, values=None, numeric=True, min_value=None, max_value=None,
+        step=None, writable=False,
+    )
+    assert model.is_error_status(err) is True
+    assert model.is_error_status(_fd(None)) is False  # message="m"
+
+
 def test_value_is_on():
     assert model.value_is_on("on") is True
     assert model.value_is_on("off") is False
