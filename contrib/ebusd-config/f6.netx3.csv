@@ -20,9 +20,10 @@ type,circuit,level,name,comment,qq,zz,pbsb,id,*name,part,type,divisor/values,uni
 # Vgl. john30/ebusd-configuration#515 -- dort wurde ein f6-File mangels
 # abfragbarer Werte abgelehnt. Das ist nach obiger Messung berechtigt; diese
 # Datei beansprucht ausdruecklich nicht, mehr zu koennen.
-# Identifikation ueber die universelle eBUS-Abfrage 0704. Am realen Geraet
-# gemessen: f6070400 -> 0a b5 4e455458 33 0129 0404 = Vaillant "NETX3", SW01.29,
-# HW04.04. Feldaufteilung: MF(1, ignoriert) + ID(STR:5) + SW(HEX:2) + HW(HEX:2).
+# SW/HW zeigt die Integration ohnehin automatisch aus den Scan-Daten an (device
+# Firmware/Hardware) -- ABER nur, wenn das Geraet ueberhaupt angelegt wird, und
+# das passiert erst mit MINDESTENS EINER Entitaet, die einen Wert hat. Der leere
+# Fehlerspeicher (nur "-") reicht dafuer NICHT. 0704 als eigene CSV-Nachricht
+# geht nicht (ebusd reserviert es fuers Scannen -> wird still verworfen).
 *r,netx
 r,,,Currenterror,current errors,,,b503,0001,error,,UIN,,,error number,error_1,,UIN,,,error number,error_2,,UIN,,,error number,error_3,,UIN,,,error number,error_4,,UIN,,,error number
-r,,,Ident,device identification,,,0704,,,,IGN:1,,,manufacturer byte,ID,,STR:5,,,device id,SW,,HEX:2,,,software version,HW,,HEX:2,,,hardware version
