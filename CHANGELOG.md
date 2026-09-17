@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.6.10
+- Rarely-changing values are refreshed every 30 min instead of every 10, so the top-up backlog no longer stays permanently full and entities fill faster after a reload.
+
 ## 1.6.9
 - Fix: never-polled registers kept filling only until other values aged, then stalled; they now get a small guaranteed quota each cycle and fill completely.
 

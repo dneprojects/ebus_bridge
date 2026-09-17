@@ -21,13 +21,15 @@ from .model import (
 
 _LOGGER = logging.getLogger(__name__)
 
-# Ab diesem Alter wird eine Nachricht erzwungen nachgelesen. Bewusst großzügig:
+# Ab diesem Alter wird eine Nachricht erzwungen nachgelesen. Bewusst SEHR großzügig:
 # per Top-up geholt werden nur Werte, die KEIN Master abfragt -- Konfig/Zähler,
-# die sich kaum ändern. Sie auf wenige Sekunden frisch halten zu wollen erzeugt
-# nur Dauer-Rauschen am Bus und holt bei vielen hundert Nachrichten nie auf.
-# Live-Werte laufen über `fast` bzw. den nativen Verkehr und bleiben ohnehin
-# jünger als diese Schwelle, werden also nie per Top-up angefasst.
-_SELF_MAINTAINED_S = 600
+# die sich kaum ändern. Zu niedrig gewählt gelten dauerhaft hunderte Werte als
+# "verharzt", der Nachhol-Rückstand ist dann staendig voll und das Zeitbudget je
+# Zyklus erschoepft ("Zeitbudget ... erschoepft" im Log) -> der Aufbau bleibt zaeh.
+# Bei 30 min schrumpft der Rueckstand auf fast null; statische Werte 30 min alt zu
+# haben ist unkritisch. Live-Werte laufen ueber `fast`/nativen Verkehr und bleiben
+# ohnehin juenger, werden also nie per Top-up angefasst.
+_SELF_MAINTAINED_S = 1800
 # Erzwungene Bus-Reads je Zyklus: viele, solange ein Rückstand aufzuholen ist,
 # danach nur noch die Grundlast. ebusd führt sie blockierend aus, deshalb gedeckelt.
 _TOPUP_MAX = 20
