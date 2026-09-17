@@ -70,6 +70,10 @@ r,,,PartloadHcKW,d.00 heating partload,,,b509,0d6c00,value,,UCH,,kW,heating part
 # ACHTUNG: am geteilten Koppler-Bus kann der sensoCOMFORT den Wert ueberschreiben.
 r,,,PartloadHwcKW,d.77 hot water partload,,,b509,0da900,value,,UCH,,kW,storage charging power
 w,elo,install,PartloadHwcKWSet,d.77 set hot water partload,,,b509,0ea900,value,,UCH,,kW,storage charging power
+# PowerValue 0daa00: STATISCHE Min/Max-Leistungsdaten (typschildartig), NICHT die
+# aktuelle Leistung -- Schreibtest an PartloadHwc aenderte sie nicht. 0x18=24 =
+# VE24-Max in kW, Rest undekodiert -> bewusst als HEX-Diagnosewert belassen.
+r,,,PowerValue,power values min/max (statisch),,,b509,0daa00,value,,HEX:6,,,
 # HwcTemp entfernt: unser 0d0100 war NICHT die DHW-Temperatur. Echtes d.03 liegt
 # laut Akeebaby bei 0d1600 (bei uns 0 = kein Fuehler); Ist-Speichertemp via ctlv3.
 #r,,,HwcTemp,d.03 DHW temperature,,,b509,0d0100,value,,D2C,,°C,temperature
