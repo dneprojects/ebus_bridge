@@ -64,12 +64,13 @@ r,,,ProbeReg3a03,unidentified (liest 45, NICHT als D.80 belegt),,,b509,0d3a03,va
 r,,,TemplimiterCutoffs,d.60 safety limiter cut offs,,,b509,0d2000,value,,UCH,,,
 # --- Einstellungen / Typschild (praktisch konstant) --------------------------
 r,,,PartloadHcKW,d.00 heating partload,,,b509,0d6c00,value,,UCH,,kW,heating part load
-# PartloadHwcKW: Lesen (0da900) + Schreiben (0ea900). WICHTIG: ebusd verwirft in
-# der Scan-Config eine Schreibnachricht STILL, wenn sie Circuit+Name einer schon
-# geladenen Lesenachricht teilt -> daher braucht der Setter einen eigenen Namen.
-# ACHTUNG: am geteilten Koppler-Bus kann der sensoCOMFORT den Wert ueberschreiben.
+# PartloadHwcKW nur LESEND. ebusd behandelt Lesen (0da900) und Schreiben (0ea900)
+# desselben Registers als Paar: gleicher Name -> Schreibzeile faellt STILL weg;
+# eigener Name (PartloadHwcKWSet) -> die LESEzeile faellt weg (element not found).
+# Beides zugleich geht in der Scan-Config nicht -> Lesewert hat Vorrang. Schreiben
+# bei Bedarf per Hex (38b509040ea900<kW>) oder dem ebus_bridge.write-Service.
 r,,,PartloadHwcKW,d.77 hot water partload,,,b509,0da900,value,,UCH,,kW,storage charging power
-w,elo,install,PartloadHwcKWSet,d.77 set hot water partload,,,b509,0ea900,value,,UCH,,kW,storage charging power
+#w,elo,install,PartloadHwcKWSet,d.77 set hot water partload,,,b509,0ea900,value,,UCH,,kW,storage charging power
 # PowerValue 0daa00: STATISCHE Min/Max-Leistungsdaten (typschildartig), NICHT die
 # aktuelle Leistung -- Schreibtest an PartloadHwc aenderte sie nicht. 0x18=24 =
 # VE24-Max in kW, Rest undekodiert -> bewusst als HEX-Diagnosewert belassen.
