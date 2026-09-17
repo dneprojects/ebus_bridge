@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.6.9
+- Fix: never-polled registers kept filling only until other values aged, then stalled; they now get a small guaranteed quota each cycle and fill completely.
+
 ## 1.6.8
 - Never-polled registers fill about twice as fast after a restart (still idle-only, so normal traffic stays responsive).
 
